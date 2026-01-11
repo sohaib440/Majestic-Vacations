@@ -98,9 +98,9 @@ export default function Indonesia() {
               muted
               playsInline
               className="w-full h-full object-cover"
-            poster="https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2138&auto=format&fit=crop"
+            // poster="https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2138&auto=format&fit=crop"
             >
-              {/* <source src={IndonesiaVideo} type="video/mp4" /> */}
+              <source src={"https://res.cloudinary.com/diwuj7tkd/video/upload/v1767980219/indonesia_video_ha6dlh.mp4"} type="video/mp4" />
 
               Your browser does not support the video tag.
             </video>

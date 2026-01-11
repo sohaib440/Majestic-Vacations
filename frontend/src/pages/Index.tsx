@@ -191,7 +191,7 @@ export default function Index() {
             preload="auto"
             className="absolute inset-0 w-full h-full object-cover"
           >
-            <source src={"https://res.cloudinary.com/diwuj7tkd/video/upload/v1767892897/home_page_video_boyxpu.mp4"} type="video/mp4" />
+            <source src={"https://res.cloudinary.com/diwuj7tkd/video/upload/v1767973026/home_pages_video_jlzifq.mp4"} type="video/mp4" />
 
             Your browser does not support the video tag.
           </video>

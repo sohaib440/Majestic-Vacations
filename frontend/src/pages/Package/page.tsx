@@ -25,7 +25,7 @@ const PackagesPage: React.FC = () => {
             </div>
 
             <h1 className="text-5xl font-bold text-gray-900 mb-4">
-              Our <span className="text-amber-600">Featured</span> Packages
+              Our Packages
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Handpicked premium experiences curated for the discerning traveler
@@ -35,8 +35,8 @@ const PackagesPage: React.FC = () => {
 
         <div className="container mx-auto p-4">
           <PackagesGrid
-            filters={filters} // Pass the filters here
-            variant="featured"
+            // filters={filters} // Pass the filters here
+            // variant="featured"
             gridCols={{ sm: 1, md: 2, lg: 3 }}
             emptyMessage="No featured packages available at the moment"
           />

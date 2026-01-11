@@ -116,9 +116,9 @@ export default function Dubai() {
               muted
               playsInline
               className="w-full h-full object-cover"
-            poster="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop"
+            // poster="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop"
             >
-              {/* <source src={DubaiVideo} type="video/mp4" /> */}
+              { <source src={"https://res.cloudinary.com/diwuj7tkd/video/upload/v1767975157/dubai_video_c9avad.mp4"} type="video/mp4" />}
 
               Your browser does not support the video tag.
             </video>
