@@ -31,6 +31,9 @@ import BookingsPage from "./pages/admin/bookings/page";
 import CreateBookingPage from "./pages/admin/bookings/create/page";
 import BookingDetailPage from "./pages/admin/bookings/[id]/page";
 import EditBookingPage from "./pages/admin/bookings/[id]/edit/page";
+import PaymentPage from "./components/payment/paymentPage";
+import BookingCancel from "./pages/admin/bookings/BookingCancel";
+import BookingSuccess from "./pages/admin/bookings/BookingSuccess";
 import { Layout } from "@/components/layout/Layout";
 
 const queryClient = new QueryClient();
@@ -58,6 +61,10 @@ const App = () => (
             <Route path="/destinations/thailand" element={<Thailand />} />
             <Route path="/destinations/indonesia" element={<Indonesia />} />
             <Route path="/packages" element={<Package />} />
+            <Route path="/payment/:bookingId" element={<PaymentPage />} />
+            <Route path="/booking/success" element={<BookingSuccess />} />
+            <Route path="/booking/cancel" element={<BookingCancel />} />
+
 
             {/* Auth routes */}
             <Route path="/login" element={<Login />} />
