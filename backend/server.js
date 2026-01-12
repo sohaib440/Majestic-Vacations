@@ -1,3 +1,4 @@
+// server.js
 require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
@@ -13,58 +14,55 @@ const initializeAdmin = require("./utils/initializeAdmin");
 
 const app = express();
 
-/*  BASIC MIDDLEWARE*/
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+/*  TRUST PROXY (for rate limit behind proxy) */
+app.set("trust proxy", 1);
 
-/*  SECURITY HEADERS (FIXED)*/
+/*  SECURITY HEADERS */
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
-// Ensure static assets (images) are accessible cross-origin
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-  next();
-});
-
-/*  SANITIZATION*/
+/*  SANITIZATION */
 app.use(mongoSanitize());
 app.use(xss());
 
-/*  CORS CONFIGURATION*/
+/*  CORS CONFIGURATION */
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
   optionsSuccessStatus: 200,
 };
-
 app.use(cors(corsOptions));
 
-/*  RATE LIMITING*/
+/*  RATE LIMITING */
 app.use(
   rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 15 * 60 * 1000,
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
   })
 );
 
-/*  STATIC FILES (UPLOADS)*/
+/*  STATIC FILES (UPLOADS) */
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+
+/*  WEBHOOK ROUTES – Use bodyParser.raw only here */
 app.use(
-  "/api/uploads",
-  express.static(path.join(__dirname, "uploads"))
+  "/webhook",
+  require("body-parser").raw({ type: "application/json" }),
+  require("./webhooks/stripeWebhook")
 );
 
-/*  ROUTES*/
-app.use("/webhooks/stripe", require("./webhooks/stripeWebhook"));
+/*  OTHER ROUTES – normal JSON parsing */
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use("/webhooks/paypal", require("./webhooks/paypalWebhook"));
 app.use("/api", indexRouter);
 
-/*  DATABASE CONNECTION*/
+/*  DATABASE CONNECTION */
 connectDatabase()
   .then(() => {
     console.log("✅ Database connected");
@@ -74,7 +72,7 @@ connectDatabase()
     console.error("❌ Database connection failed:", err);
   });
 
-/*  ERROR HANDLER*/
+/*  ERROR HANDLER */
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
@@ -83,7 +81,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-/*  START SERVER*/
+/*  START SERVER */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on port ${PORT}`)
