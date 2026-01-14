@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
 import logo from "@/assets/logo.webp";
 
@@ -18,6 +18,21 @@ const quickLinks = [
 ];
 
 export function Footer() {
+  const location = useLocation();
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, linkPath: string) => {
+    // Check if we're already on the same page
+    if (location.pathname === linkPath) {
+      e.preventDefault();
+      // Scroll to top smoothly
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+    // If it's a different page, let the router handle navigation
+  };
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-4 py-16">
@@ -50,6 +65,7 @@ export function Footer() {
                 <li key={link.path}>
                   <Link
                     to={link.path}
+                    onClick={(e) => handleLinkClick(e, link.path)}
                     className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
                   >
                     {link.name}
@@ -67,6 +83,7 @@ export function Footer() {
                 <li key={dest.path}>
                   <Link
                     to={dest.path}
+                    onClick={(e) => handleLinkClick(e, dest.path)}
                     className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
                   >
                     {dest.name}

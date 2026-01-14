@@ -17,10 +17,10 @@ const AdminLayout: React.FC = () => {
         </div>
 
         {/* Main content scrolls independently */}
-        <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0 overflow-x-auto">
           <main
             ref={mainRef}
-            className="flex-1 overflow-y-auto overscroll-contain p-2 md:p-6 pb-[env(safe-area-inset-bottom)]"
+            className="flex-1  overflow-y-auto overscroll-contain p-2 md:p-6 pb-[env(safe-area-inset-bottom)]"
           >
             <Outlet />
           </main>
