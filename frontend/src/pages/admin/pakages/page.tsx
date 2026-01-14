@@ -16,10 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Edit, Trash2, Eye, Filter } from 'lucide-react';
 import { useGetAllTours, useDeleteTour } from '@/features/tourPackageApi';
 import { TourPackageFilters } from '@/types/tour-package';
-import { formatPrice } from '@/lib/tour-utils'; 
+import { formatPrice } from '@/lib/tour-utils';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { toast } from '@/hooks/use-toast';
- const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_API_URL
 const AdminPackagesPage: React.FC = () => {
   const [filters, setFilters] = useState<TourPackageFilters>({
     page: 1,
@@ -146,7 +146,7 @@ const AdminPackagesPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
                         <img
-                         src={`${baseUrl}/${tour.images[0]}`} // Use the utility function here
+                          src={`${baseUrl}/${tour.images[0]}`} // Use the utility function here
                           alt={tour.title}
                           className="h-full w-full object-cover"
                           onError={(e) => (e.currentTarget.src = '/placeholder.svg')}

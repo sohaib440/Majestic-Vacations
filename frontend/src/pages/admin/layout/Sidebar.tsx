@@ -4,37 +4,37 @@ import {
   Home,
   Package,
   Users,
-  DollarSign,
-  BarChart3,
-  Settings,
-  FileText,
-  Globe,
-  MessageSquare,
-  Hotel,
-  MapPin,
-  CreditCard,
   HelpCircle,
+  FileText,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+// Define nav items interface
+interface NavItem {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+// Define nav items in one place (used by both Sidebar and Navbar)
+export const navItems: NavItem[] = [
   { name: "Dashboard", path: "/admin/dashboard", icon: Home },
   { name: "Packages", path: "/admin/packages", icon: Package },
-  { name: "Inquiry", path: "/admin/inquiry", icon: HelpCircle  },
+  { name: "Inquiry", path: "/admin/inquiry", icon: HelpCircle },
   { name: "Customers", path: "/admin/customers", icon: Users },
   { name: "Bookings", path: "/admin/bookings", icon: FileText },
-  { name: "Payments", path: "/admin/payments", icon: CreditCard },
   { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
-
 ];
 
-const AdminSidebar = () => {
+const AdminSidebar: React.FC = () => {
   const location = useLocation();
 
   return (
-    <aside className="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200 flex-shrink-0">
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <nav className="flex-1 px-2 pb-4 space-y-1 overflow-y-auto">
+    <aside className="hidden md:flex md:flex-col md:w-64 border-r border-gray-200 flex-shrink-0">
+      <div className="flex flex-col h-full">
+        {/* Navigation - fixed, no scroll */}
+        <nav className="flex-1 px-2 py-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;

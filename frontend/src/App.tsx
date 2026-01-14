@@ -35,6 +35,7 @@ import PaymentPage from "./components/payment/paymentPage";
 import BookingCancel from "./pages/admin/bookings/BookingCancel";
 import BookingSuccess from "./pages/admin/bookings/BookingSuccess";
 import { Layout } from "@/components/layout/Layout";
+import CustomersPage from "./pages/admin/customer/page";
 
 const queryClient = new QueryClient();
 
@@ -87,11 +88,14 @@ const App = () => (
               <Route path="packages/:id/edit" element={<EditPackage />} />
               <Route path="packages/:id/detail" element={<AdminTourDetailPage />} />
 
-              {/* Booking Management - FIXED PATH */}
+              {/* Booking Management  */}
               <Route path="bookings" element={<BookingsPage />} />
               <Route path="bookings/create" element={<CreateBookingPage />} />
               <Route path="bookings/:id" element={<BookingDetailPage />} />
               <Route path="bookings/:id/edit" element={<EditBookingPage />} />
+
+              {/* Customer Management - NEW */}
+              <Route path="customers" element={<CustomersPage />} />
 
               {/* Inquiry Management */}
               <Route path="inquiry" element={<InquiryPage />} />
