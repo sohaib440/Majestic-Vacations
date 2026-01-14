@@ -17,7 +17,7 @@ const galleryImages = [
   { src: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80", alt: "Thai Elephants" },
   { src: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80", alt: "Thai Food" },
   { src: "https://images.unsplash.com/photo-1563315001-ab59cc08977f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGZsb2F0aW5nJTIwbWFya2V0fGVufDB8fDB8fHww", alt: "Floating Market" },
-  { src: "https://images.unsplash.com/photo-1585086187927-0b50cce8d60d?w=800&q=80", alt: "Thai Longboat" },
+  { src: "https://images.unsplash.com/photo-1513568720563-6a5b8c6caab3?q=80&w=1144&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Thai Longboat" },
 ];
 
 const thailandFoods = [
