@@ -55,11 +55,7 @@ const ImageCarousel: React.FC<ImageCarouselProps> = ({ items, className = '' }) 
                   <div className="carousel-content">
                      <div className="carousel-title">{item.title}</div>
                      <div className="carousel-description">{item.description}</div>
-                     {item.link && (
-                        <a className="carousel-link" target="_blank" rel="noopener noreferrer" href={item.link}>
-                           <button className="carousel-button">See More</button>
-                        </a>
-                     )}
+                     
                   </div>
                </div>
             ))}

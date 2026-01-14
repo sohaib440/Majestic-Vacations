@@ -12,12 +12,12 @@ import DestinationPackagesSection from "@/components/shared/DestinationPackagesS
 
 const galleryImages = [
   { src: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80", alt: "Bali Temple" },
-  { src: "https://images.unsplash.com/photo-1577717903315-1691ae25ab3f?w=800&q=80", alt: "Komodo Island" },
-  { src: "https://images.unsplash.com/photo-1596402184320-417e7178b2cd?w=800&q=80", alt: "Borobudur" },
+  { src: "https://images.pexels.com/photos/3125852/pexels-photo-3125852.jpeg?_gl=1*8nbb6y*_ga*NTY1NzkwNjk4LjE3NjgzOTQxMzg.*_ga_8JE65Q40S6*czE3NjgzOTQxMzgkbzEkZzEkdDE3NjgzOTQyMjMkajU5JGwwJGgw", alt: "Komodo Island" },
+  { src: "https://images.unsplash.com/photo-1707371773021-d39017b761f0?q=80&w=749&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Borobudur" },
   { src: "https://images.unsplash.com/photo-1559628233-100c798642d4?w=800&q=80", alt: "Rice Terraces" },
   { src: "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=800&q=80", alt: "Bali Beach" },
-  { src: "https://images.unsplash.com/photo-1570789210967-2cac24f13a24?w=800&q=80", alt: "Gili Islands" },
-  { src: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=800&q=80", alt: "Bali Monkey" },
+  { src: "https://www.wildtravelstory.com/wp-content/uploads/db39977.jpg", alt: "Gili Islands" },
+  { src: "https://plus.unsplash.com/premium_photo-1682091960567-374489462891?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Bali Monkey" },
   { src: "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?w=800&q=80", alt: "Indonesian Food" },
 ];
 
@@ -67,19 +67,19 @@ export default function Indonesia() {
       link: "#bali"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1707371773021-d39017b761f0?q=80&w=749&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       title: "Borobudur Temple",
       description: "Visit the world's largest Buddhist temple and witness magnificent sunrise views from this ancient wonder.",
       link: "#borobudur"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.pexels.com/photos/3125852/pexels-photo-3125852.jpeg?_gl=1*8nbb6y*_ga*NTY1NzkwNjk4LjE3NjgzOTQxMzg.*_ga_8JE65Q40S6*czE3NjgzOTQxMzgkbzEkZzEkdDE3NjgzOTQyMjMkajU5JGwwJGgw",
       title: "Komodo National Park",
       description: "Encounter the legendary Komodo dragons and explore pristine diving spots in this UNESCO World Heritage site.",
       link: "#komodo"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1702664045144-8c97b3034d26?q=80&w=682&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       title: "Raja Ampat",
       description: "Dive into the world's most biodiverse marine environment with stunning coral reefs and crystal-clear waters.",
       link: "#raja-ampat"

@@ -12,11 +12,11 @@ import DestinationPackagesSection from "@/components/shared/DestinationPackagesS
 const galleryImages = [
   { src: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80", alt: "Bangkok Temples" },
   { src: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80", alt: "Thai Beach" },
-  { src: "https://images.unsplash.com/photo-1569569970363-df7b6160d111?w=800&q=80", alt: "Chiang Mai" },
+  { src: "https://plus.unsplash.com/premium_photo-1661929242720-140374d97c94?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2hpYW5nJTIwbWFpfGVufDB8fDB8fHww", alt: "Chiang Mai" },
   { src: "https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800&q=80", alt: "Phi Phi Islands" },
   { src: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?w=800&q=80", alt: "Thai Elephants" },
   { src: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80", alt: "Thai Food" },
-  { src: "https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800&q=80", alt: "Floating Market" },
+  { src: "https://images.unsplash.com/photo-1563315001-ab59cc08977f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGZsb2F0aW5nJTIwbWFya2V0fGVufDB8fDB8fHww", alt: "Floating Market" },
   { src: "https://images.unsplash.com/photo-1585086187927-0b50cce8d60d?w=800&q=80", alt: "Thai Longboat" },
 ];
 
@@ -72,13 +72,13 @@ export default function Thailand() {
       link: "#phi-phi"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1563492065213-9899d2e6e11f?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://plus.unsplash.com/premium_photo-1661929242720-140374d97c94?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Y2hpYW5nJTIwbWFpfGVufDB8fDB8fHww",
       title: "Chiang Mai Temples",
       description: "Visit ancient temples and experience the spiritual heart of Northern Thailand in this cultural gem.",
       link: "#chiang-mai"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1506665531195-3566af2b4dfa?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1563315001-ab59cc08977f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGZsb2F0aW5nJTIwbWFya2V0fGVufDB8fDB8fHww",
       title: "Floating Markets",
       description: "Experience the vibrant atmosphere of traditional floating markets selling local goods and authentic Thai food.",
       link: "#floating-markets"

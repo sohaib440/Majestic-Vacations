@@ -11,13 +11,13 @@ import DestinationPackagesSection from "@/components/shared/DestinationPackagesS
 
 const galleryImages = [
   { src: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&q=80", alt: "Istanbul Skyline" },
-  { src: "https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=800&q=80", alt: "Cappadocia Balloons" },
+  { src: "https://plus.unsplash.com/premium_photo-1661963652315-d5a9d26637dd?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Cappadocia Balloons" },
   { src: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80", alt: "Antalya Coast" },
   { src: "https://images.unsplash.com/photo-1589561454226-796a8aa89b05?w=800&q=80", alt: "Hagia Sophia" },
   { src: "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=800&q=80", alt: "Pamukkale" },
-  { src: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80", alt: "Blue Mosque" },
-  { src: "https://images.unsplash.com/photo-1609902726285-00668009f004?w=800&q=80", alt: "Grand Bazaar" },
-  { src: "https://images.unsplash.com/photo-1568781269783-0928c03e94f3?w=800&q=80", alt: "Turkish Tea" },
+  { src: "https://images.unsplash.com/photo-1602941889598-3e7780b9a602?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Blue Mosque" },
+  { src: "https://images.unsplash.com/photo-1567408773508-4e5da32afafd?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Grand Bazaar" },
+  { src: "https://images.unsplash.com/photo-1601313372155-764776db03be?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Turkish Tea" },
 ];
 
 const turkeyFoods = [
@@ -60,7 +60,7 @@ export default function Turkey() {
 
   const carouselItems: CarouselItem[] = [
     {
-      imageUrl: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=2071&auto=format&fit=crop",
+      imageUrl: "https://plus.unsplash.com/premium_photo-1661963652315-d5a9d26637dd?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       title: "Cappadocia",
       description: "Witness the magical landscape of fairy chimneys and take an unforgettable hot air balloon ride over stunning volcanic formations.",
       link: "#cappadocia"
@@ -72,13 +72,13 @@ export default function Turkey() {
       link: "#hagia-sophia"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1605260621044-e07798afd7ca?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1595846415458-404defd93fb6?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       title: "Pamukkale",
       description: "Explore the stunning white travertine terraces and ancient ruins of Hierapolis, a UNESCO World Heritage site.",
       link: "#pamukkale"
     },
     {
-      imageUrl: "https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?q=80&w=987&auto=format&fit=crop",
+      imageUrl: "https://images.unsplash.com/photo-1650802314281-50646ff3f65c?q=80&w=881&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       title: "Blue Mosque",
       description: "Visit this stunning Ottoman-era mosque famous for its intricate blue tiles and magnificent six minarets.",
       link: "#blue-mosque"
@@ -178,7 +178,7 @@ export default function Turkey() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=600&q=80"
+                  src="https://plus.unsplash.com/premium_photo-1661963652315-d5a9d26637dd?q=80&w=1032&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Cappadocia"
                   className="rounded-xl object-cover h-64 w-full"
                 />

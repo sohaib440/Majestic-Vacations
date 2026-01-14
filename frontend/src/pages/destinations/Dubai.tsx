@@ -14,9 +14,9 @@ import AnimatedDestinationPage from "@/components/destinations/AnimatedDestinati
 const galleryImages = [
   { src: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80", alt: "Dubai Skyline" },
   { src: "https://images.unsplash.com/photo-1518684079-3c830dcef090?w=800&q=80", alt: "Burj Al Arab" },
-  { src: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80", alt: "Dubai Hotel" },
+  { src: "https://images.unsplash.com/photo-1672135383688-8fdf9a8011e1?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", alt: "Dubai Mall" },
   { src: "https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=800&q=80", alt: "Dubai Marina" },
-  { src: "https://images.unsplash.com/photo-1546412414-e1885259563a?w=800&q=80", alt: "Desert Safari" },
+  { src: "https://images.unsplash.com/photo-1686918269961-507270a5a238?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzZXVtJTIwb2YlMjB0aGUlMjBmdXR1cmV8ZW58MHx8MHx8fDA%3D", alt: "Museum of Future" },
   { src: "https://images.unsplash.com/photo-1526495124232-a04e1849168c?w=800&q=80", alt: "Palm Jumeirah" },
   { src: "https://images.unsplash.com/photo-1597659840241-37e2b9c2f55f?w=800&q=80", alt: "Dubai Frame" },
   { src: "https://images.unsplash.com/photo-1512632578888-169bbbc64f33?w=800&q=80", alt: "Dubai Night" },
@@ -72,7 +72,7 @@ export default function Dubai() {
   const carouselItems: CarouselItem[] = [
     {
       imageUrl:
-        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=987&auto=format&fit=crop",
       title: "Burj Khalifa",
       description:
         "Visit the world's tallest building and enjoy breathtaking views from the observation deck overlooking Dubai.",
@@ -88,7 +88,7 @@ export default function Dubai() {
     },
     {
       imageUrl:
-        "https://images.unsplash.com/photo-1582672060674-bc2bd808a8b5?q=80&w=987&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop",
       title: "Dubai Mall",
       description:
         "Shop at one of the world's largest shopping malls featuring over 1,200 retail stores and amazing attractions.",
@@ -96,7 +96,7 @@ export default function Dubai() {
     },
     {
       imageUrl:
-        "https://images.unsplash.com/photo-1451337516015-6b6e9a44a8a3?q=80&w=987&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1624062999726-083e5268525d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8ZGVzZXJ0JTIwc2FmYXJpfGVufDB8fDB8fHww",
       title: "Desert Safari",
       description:
         "Experience the thrill of dune bashing and traditional Bedouin culture in the vast Arabian desert.",
