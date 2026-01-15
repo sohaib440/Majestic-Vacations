@@ -18,7 +18,8 @@ import {
    TrendingUp,
    Eye,
    Share2,
-   Heart
+   Heart,
+   AlertTriangle
 } from 'lucide-react';
 import { useGetTourById, useDeleteTour } from '@/features/tourPackageApi';
 import { toast } from '@/hooks/use-toast';
@@ -34,19 +35,20 @@ import {
    AlertDialogHeader,
    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 const baseUrl = import.meta.env.VITE_API_URL
 // import { useAuth } from '@/contexts/AuthContext';
 
 interface TourDetailPageProps {
    id?: string;
    isAdmin?: boolean;
-   isPublic?: boolean;
+   includeDeleted?: boolean;
 }
 
 const TourDetailPage: React.FC<TourDetailPageProps> = ({
    id,
    isAdmin: propIsAdmin,
-   isPublic: propIsPublic
+   includeDeleted = false
 }) => {
    const navigate = useNavigate();
    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -66,9 +68,8 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
    // Use props if provided, otherwise determine from context
    const isAdmin = propIsAdmin !== undefined ? propIsAdmin : isUserAdmin;
-   const isPublic = propIsPublic !== undefined ? propIsPublic : (!isUserAdmin || !propIsAdmin);
 
-   const { data: tourResponse, isLoading, error } = useGetTourById(id || '');
+   const { data: tourResponse, isLoading, error } = useGetTourById(id || '', includeDeleted);
    const deleteTour = useDeleteTour();
 
    if (isLoading) {
@@ -134,7 +135,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   <h1 className="text-3xl font-bold tracking-tight">{tour.title}</h1>
                   <p className="text-muted-foreground">
                      {isAdmin && `Created on ${new Date(tour.createdAt).toLocaleDateString()}`}
-                     {isPublic && `${tour.destination} • ${tour.duration}`}
+                     {!isAdmin && `${tour.destination} • ${tour.duration}`}
                   </p>
                </div>
             </div>
@@ -174,7 +175,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
             {/* Left Column - Main Info (Same for both) */}
             <div className="lg:col-span-2 space-y-6">
                {/* Main Image */}
-               <Card className={isPublic ? "border-0 shadow-none" : ""}>
+               <Card className={!isAdmin ? "border-0 shadow-none" : ""}>
                   <CardContent className="p-0">
                      <div className="relative">
                         <img
@@ -204,7 +205,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                </Card>
                {/* Highlights */}
                {tour.highlights && tour.highlights.length > 0 && (
-                  <Card className={isPublic ? "border-0 shadow-none" : ""}>
+                  <Card className={!isAdmin  ? "border-0 shadow-none" : ""}>
                      <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                            <CheckCircle className="h-5 w-5 text-green-500" />
@@ -274,7 +275,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
             {/* Right Column */}
             <div className="space-y-6">
                {/* Quick Stats */}
-               <Card className={isPublic ? "border-0 shadow-none" : ""}>
+               <Card className={!isAdmin  ? "border-0 shadow-none" : ""}>
                   <CardHeader>
                      <CardTitle>Tour Information</CardTitle>
                   </CardHeader>
@@ -375,20 +376,20 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                </Card>
 
                {/* Pricing Card */}
-               <Card className={isPublic ? "border-2 border-primary/20 shadow-lg" : ""}>
+               <Card className={!isAdmin  ? "border-2 border-primary/20 shadow-lg" : ""}>
                   <CardHeader>
                      <CardTitle className="flex items-center gap-2">
                         <DollarSign className="h-5 w-5 text-green-500" />
-                        {isPublic ? "Package Price" : "Pricing Details"}
+                        {!isAdmin  ? "Package Price" : "Pricing Details"}
                      </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
                            <span className="text-sm text-muted-foreground">
-                              {isPublic ? "Price per person" : "Current Price"}
+                              {!isAdmin  ? "Price per person" : "Current Price"}
                            </span>
-                           <div className={`text-2xl font-bold ${isPublic ? "text-primary" : "text-green-600"}`}>
+                           <div className={`text-2xl font-bold ${!isAdmin  ? "text-primary" : "text-green-600"}`}>
                               {formatPrice(tour.price)}
                            </div>
                         </div>
@@ -415,7 +416,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
                      <Separator />
 
-                     {isPublic ? (
+                     {!isAdmin  ? (
                         <Button
                            className="w-full bg-primary hover:bg-primary/90 h-12 text-lg"
                            onClick={() => navigate(`/booking/create?tourId=${tour._id}`)}
@@ -502,6 +503,16 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   </AlertDialogFooter>
                </AlertDialogContent>
             </AlertDialog>
+         )}
+         {isAdmin && tour.isDeleted && (
+            <Alert variant="destructive">
+               <AlertTriangle className="h-4 w-4" />
+               <AlertTitle>This tour is deleted</AlertTitle>
+               <AlertDescription>
+                  This tour is marked as deleted and hidden from public view.
+                  You can restore it by editing and setting it to active.
+               </AlertDescription>
+            </Alert>
          )}
       </div>
    );

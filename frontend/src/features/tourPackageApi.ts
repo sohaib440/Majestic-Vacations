@@ -49,14 +49,33 @@ export const getAllToursAPI = async (filters: TourPackageFilters = {}): Promise<
   if (filters.maxPrice !== undefined) params.append('maxPrice', filters.maxPrice.toString());
   if (filters.minMonthlyPrice !== undefined) params.append('minMonthlyPrice', filters.minMonthlyPrice.toString());
   if (filters.maxMonthlyPrice !== undefined) params.append('maxMonthlyPrice', filters.maxMonthlyPrice.toString());
+  if (filters.isActive !== undefined) params.append('isActive', filters.isActive.toString());
+  if (filters.isDeleted !== undefined) params.append('isDeleted', filters.isDeleted.toString());
+  if (filters.includeDeleted !== undefined) params.append('includeDeleted', filters.includeDeleted.toString());
+  if (filters.showAll !== undefined) params.append('showAll', filters.showAll.toString());
 
   const response = await api.get(`/tour?${params.toString()}`);
   return response.data;
 };
 
-export const getTourByIdAPI = async (id: string): Promise<TourPackageResponse> => {
-  const response = await api.get(`/tour/${id}`);
-  return response.data;
+// Get single tour
+export const getTourByIdAPI = async (id: string, includeDeleted?: boolean): Promise<TourPackageResponse> => {
+  try {
+    const params = new URLSearchParams();
+    if (includeDeleted) params.append('includeDeleted', 'true');
+
+    const response = await api.get(`/tour/${id}${params.toString() ? `?${params.toString()}` : ''}`);
+    return response.data;
+  } catch (error: any) {
+    // Handle 404 and other errors gracefully
+    if (error.response?.status === 404) {
+      return {
+        status: 'fail',
+        message: 'Tour not found'
+      };
+    }
+    throw error;
+  }
 };
 
 // Get featured tours
@@ -137,11 +156,18 @@ export const useGetFeaturedTours = () => {
   });
 };
 
-export const useGetTourById = (id: string) => {
+export const useGetTourById = (id: string, includeDeleted?: boolean) => {
   return useQuery({
-    queryKey: ['tour', id],
-    queryFn: () => getTourByIdAPI(id),
+    queryKey: ['tour', id, includeDeleted],
+    queryFn: () => getTourByIdAPI(id, includeDeleted),
     enabled: !!id,
+    retry: (failureCount, error: any) => {
+      // Don't retry on 404 errors
+      if (error?.response?.status === 404) {
+        return false;
+      }
+      return failureCount < 3;
+    },
   });
 };
 

@@ -56,7 +56,8 @@ const PackageCard: React.FC<PackageCardProps> = ({
       }
       return { text: '', color: '', show: false };
    };
-
+   const isInactive = !tour.isActive;
+   const isDeleted = tour.isDeleted;
    const seatStatus = getSeatStatus();
 
    return (
@@ -71,6 +72,19 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      e.currentTarget.src = "/placeholder.svg";
                   }}
                />
+               {/* Add status badges */}
+               <div className="absolute top-3 left-3 space-y-2">
+                  {isDeleted && (
+                     <Badge variant="destructive" className="text-xs">
+                        Deleted
+                     </Badge>
+                  )}
+                  {isInactive && !isDeleted && (
+                     <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
+                        Inactive
+                     </Badge>
+                  )}
+               </div>
                {tour.images && tour.images.length > 1 && (
                   <Badge className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/80 text-white text-xs">
                      +{tour.images.length - 1} more

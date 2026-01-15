@@ -1,4 +1,4 @@
-// models/tourSchema.js
+// models/tourSchema.js - Simplified
 const mongoose = require('mongoose');
 
 const tourSchema = new mongoose.Schema(
@@ -21,18 +21,16 @@ const tourSchema = new mongoose.Schema(
       enum: ['Dubai', 'Greece', 'Indonesia', 'Turkey', 'Thailand'],
       trim: true,
     },
-    startDate: {  // Changed from 'date' to 'startDate'
+    startDate: {
       type: String,
       required: [true, 'A tour must have a start date'],
       trim: true,
     },
-    images: {  // Changed from 'image' to 'images' (array)
+    images: {
       type: [String],
       required: [true, 'A tour must have at least one image'],
       validate: {
-        validator: function(arr) {
-          return arr && arr.length > 0;
-        },
+        validator: (arr) => arr && arr.length > 0,
         message: 'At least one image is required'
       }
     },
@@ -45,13 +43,11 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a group size'],
       min: [1, 'Group size must be at least 1']
     },
-    // Regular price
     price: {
       type: Number,
       required: [true, 'A tour must have a price'],
       min: [0, 'Price cannot be negative'],
     },
-    // New field: price per month
     pricePerMonth: {
       type: Number,
       min: [0, 'Price per month cannot be negative'],
@@ -67,14 +63,14 @@ const tourSchema = new mongoose.Schema(
       min: [1, 'Rating must be at least 1'],
       max: [5, 'Rating must be at most 5'],
     },
-    highlights: {  // Enhanced highlights structure
+    highlights: {
       type: [{
         text: {
           type: String,
           required: [true, 'Highlight must have text']
         },
         media: {
-          type: String,  // URL for image or video
+          type: String,
           default: null
         },
         mediaType: {
@@ -84,13 +80,6 @@ const tourSchema = new mongoose.Schema(
         }
       }],
       default: [],
-      validate: {
-        validator: function(arr) {
-          // Validate that each highlight has text if provided
-          return arr.every(h => h && h.text && h.text.trim().length > 0);
-        },
-        message: 'Each highlight must have text content'
-      }
     },
     featured: {
       type: Boolean,
@@ -105,6 +94,18 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       min: [0, 'Available seats cannot be negative']
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -115,9 +116,13 @@ const tourSchema = new mongoose.Schema(
 
 // Calculate available seats before saving
 tourSchema.pre('save', function (next) {
-  // Ensure groupSize is a number
+  // Ensure groupSize and pricePerMonth are numbers
   if (typeof this.groupSize === 'string') {
     this.groupSize = parseInt(this.groupSize) || 0;
+  }
+
+  if (typeof this.pricePerMonth === 'string') {
+    this.pricePerMonth = parseFloat(this.pricePerMonth) || 0;
   }
 
   // Calculate available seats
@@ -128,15 +133,10 @@ tourSchema.pre('save', function (next) {
     this.bookedSeats = this.groupSize;
   }
 
-  // Ensure pricePerMonth is valid
-  if (typeof this.pricePerMonth === 'string') {
-    this.pricePerMonth = parseFloat(this.pricePerMonth) || 0;
-  }
-
   next();
 });
 
-// Virtual for seat information (more reliable than pre-save)
+// Virtuals
 tourSchema.virtual('seatInfo').get(function () {
   return {
     totalSeats: this.groupSize,
@@ -145,30 +145,19 @@ tourSchema.virtual('seatInfo').get(function () {
   };
 });
 
-// Virtual for calculating monthly payment info
 tourSchema.virtual('monthlyPaymentInfo').get(function () {
   if (!this.price || !this.pricePerMonth) return null;
-  
-  const totalPrice = this.price;
-  const monthlyPrice = this.pricePerMonth;
-  const monthsRequired = Math.ceil(totalPrice / monthlyPrice);
-  
+
+  const monthsRequired = Math.ceil(this.price / this.pricePerMonth);
+  const lastPayment = this.price - (this.pricePerMonth * (monthsRequired - 1));
+
   return {
-    totalPrice,
-    monthlyPrice,
+    totalPrice: this.price,
+    monthlyPrice: this.pricePerMonth,
     monthsRequired,
-    lastPayment: totalPrice - (monthlyPrice * (monthsRequired - 1))
+    lastPayment
   };
 });
-
-// Indexes
-tourSchema.index({ country: 1 });
-tourSchema.index({ startDate: 1 }); // Updated index
-tourSchema.index({ featured: 1 });
-tourSchema.index({ price: 1 });
-tourSchema.index({ pricePerMonth: 1 }); // New index
-tourSchema.index({ availableSeats: 1 });
-tourSchema.index({ createdAt: -1 });
 
 const Tour = mongoose.model('Tour', tourSchema);
 

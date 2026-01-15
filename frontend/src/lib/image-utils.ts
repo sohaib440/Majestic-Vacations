@@ -14,18 +14,13 @@ export const getImageUrl = (imagePath: string): string => {
       return imagePath;
    }
 
-   // For local uploads
    const baseUrl = import.meta.env.VITE_API_URL;
 
-   // Determine path based on URL structure
-   if (imagePath.includes('tour-packages')) {
-      return `${baseUrl}${imagePath}`;
-   } else if (imagePath.includes('tour-highlights')) {
-      return `${baseUrl}${imagePath}`;
-   } else {
-      // Default path
-      return `${baseUrl}/${imagePath}`;
-   }
+   // Ensure imagePath doesn't start with a slash to avoid double slashes
+   const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
+
+   // Properly construct the URL
+   return `${baseUrl}/${cleanPath}`;
 };
 
 export const getTourImageUrl = (imagePath: string): string => {

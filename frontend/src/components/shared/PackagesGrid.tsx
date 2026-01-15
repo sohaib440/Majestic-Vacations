@@ -39,11 +39,15 @@ const PackagesGrid: React.FC<PackagesGridProps> = ({
    const finalFilters: TourPackageFilters = {
       ...filters,
       ...(limit && { limit }),
-      ...(country && { country }), // Add country filter
+      ...(country && { country }),
+      // For public views, ensure we don't show deleted tours
+      isDeleted: false,
+      isActive: true,
    };
    // Only add featured filter if explicitly provided (not undefined)
-   if (featured !== undefined) {
-      finalFilters.featured = featured;
+   if (filters.includeDeleted || filters.showAll) {
+      delete finalFilters.isDeleted;
+      delete finalFilters.isActive;
    }
 
    const { data, isLoading } = useGetAllTours(finalFilters);

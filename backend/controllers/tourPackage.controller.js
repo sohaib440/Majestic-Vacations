@@ -1,18 +1,16 @@
-// controllers/tourPackage.controller.js
 const Tour = require('../models/tourSchema');
 
-// Helper function to update available seats
+// Helper functions
 const updateTourSeats = async (tourId, seatsToBook) => {
   try {
-    // Use atomic operation with $inc
-    const updatedTour = await Tour.findByIdAndUpdate(
-      tourId,
+    const updatedTour = await Tour.findOneAndUpdate(
+      { _id: tourId, isActive: true, isDeleted: false },
       { $inc: { bookedSeats: seatsToBook } },
       { new: true }
     );
 
     if (!updatedTour) {
-      return { success: false, message: 'Tour not found' };
+      return { success: false, message: 'Active tour not found' };
     }
 
     return {
@@ -21,24 +19,22 @@ const updateTourSeats = async (tourId, seatsToBook) => {
       bookedSeats: updatedTour.bookedSeats,
       availableSeats: updatedTour.availableSeats
     };
-
   } catch (error) {
     console.error('Error updating tour seats:', error);
     return { success: false, message: 'Error updating seats', error: error.message };
   }
 };
 
-// Helper function to release seats
 const releaseTourSeats = async (tourId, seatsToRelease) => {
   try {
-    const updatedTour = await Tour.findByIdAndUpdate(
-      tourId,
+    const updatedTour = await Tour.findOneAndUpdate(
+      { _id: tourId, isActive: true, isDeleted: false },
       { $inc: { bookedSeats: -seatsToRelease } },
       { new: true }
     );
 
     if (!updatedTour) {
-      return { success: false, message: 'Tour not found' };
+      return { success: false, message: 'Active tour not found' };
     }
 
     return {
@@ -47,100 +43,94 @@ const releaseTourSeats = async (tourId, seatsToRelease) => {
       bookedSeats: updatedTour.bookedSeats,
       availableSeats: updatedTour.availableSeats
     };
-
   } catch (error) {
     console.error('Error releasing tour seats:', error);
     return { success: false, message: 'Error releasing seats', error: error.message };
   }
 };
 
-// Get all tours (remove isActive filter since we removed that field)
+// Helper: Parse boolean from query
+const parseBool = (value) => value === 'true';
+
+// Helper: Parse number from query
+const parseNumber = (value) => parseFloat(value) || undefined;
+
+// Get all tours - Clean and simple
 const getAllTours = async (req, res) => {
   try {
-    // Build filter object
+    const { query } = req;
+
+    // Build filter step by step
     const filter = {};
 
-    // Apply featured filter if provided
-    if (req.query.featured !== undefined) {
-      filter.featured = req.query.featured === 'true';
+    // Boolean filters
+    if (query.featured !== undefined) filter.featured = parseBool(query.featured);
+    if (query.availableOnly === 'true') filter.availableSeats = { $gt: 0 };
+
+    // Text search filters
+    if (query.title) filter.title = { $regex: query.title, $options: 'i' };
+    if (query.destination) filter.destination = { $regex: query.destination, $options: 'i' };
+
+    // Country filter
+    const validCountries = ['Dubai', 'Greece', 'Indonesia', 'Turkey', 'Thailand'];
+    if (query.country && validCountries.includes(query.country)) {
+      filter.country = query.country;
     }
 
-    // Apply country filter if provided (exact match)
-    if (req.query.country) {
-      const validCountries = ['Dubai', 'Greece', 'Indonesia', 'Turkey', 'Thailand'];
-      if (validCountries.includes(req.query.country)) {
-        filter.country = req.query.country;
-      }
+    // Price filters
+    const priceFilter = {};
+    if (query.minPrice) priceFilter.$gte = parseNumber(query.minPrice);
+    if (query.maxPrice) priceFilter.$lte = parseNumber(query.maxPrice);
+    if (Object.keys(priceFilter).length > 0) filter.price = priceFilter;
+
+    // Monthly price filters
+    const monthlyPriceFilter = {};
+    if (query.minMonthlyPrice) monthlyPriceFilter.$gte = parseNumber(query.minMonthlyPrice);
+    if (query.maxMonthlyPrice) monthlyPriceFilter.$lte = parseNumber(query.maxMonthlyPrice);
+    if (Object.keys(monthlyPriceFilter).length > 0) filter.pricePerMonth = monthlyPriceFilter;
+
+    // Active/Deleted filters - SIMPLIFIED
+    if (query.isActive !== undefined) {
+      filter.isActive = parseBool(query.isActive);
     }
 
-    // Apply title search filter if provided (case-insensitive partial match)
-    if (req.query.title) {
-      filter.title = { $regex: req.query.title, $options: 'i' };
-    }
-
-    // Apply destination filter if provided (case-insensitive partial match)
-    if (req.query.destination) {
-      filter.destination = { $regex: req.query.destination, $options: 'i' };
-    }
-
-    // Apply availability filter if provided
-    if (req.query.availableOnly === 'true') {
-      filter.availableSeats = { $gt: 0 };
-    }
-
-    // Apply price range filters
-    if (req.query.minPrice) {
-      filter.price = { $gte: parseFloat(req.query.minPrice) };
-    }
-    if (req.query.maxPrice) {
-      filter.price = { ...filter.price, $lte: parseFloat(req.query.maxPrice) };
-    }
-
-    // Apply pricePerMonth range filters
-    if (req.query.minMonthlyPrice) {
-      filter.pricePerMonth = { $gte: parseFloat(req.query.minMonthlyPrice) };
-    }
-    if (req.query.maxMonthlyPrice) {
-      filter.pricePerMonth = { ...filter.pricePerMonth, $lte: parseFloat(req.query.maxMonthlyPrice) };
+    if (query.isDeleted !== undefined) {
+      filter.isDeleted = parseBool(query.isDeleted);
+    } else if (!query.includeDeleted && !query.showAll) {
+      // Default: show only non-deleted tours
+      filter.isDeleted = false;
     }
 
     // Build query
-    let query = Tour.find(filter);
+    const dbQuery = Tour.find(filter);
 
     // Apply sorting
-    if (req.query.sort) {
-      const sortOptions = {
-        'price-asc': 'price',
-        'price-desc': '-price',
-        'pricePerMonth-asc': 'pricePerMonth',
-        'pricePerMonth-desc': '-pricePerMonth',
-        'rating-desc': '-rating',
-        'date-asc': 'startDate', // Changed from 'date' to 'startDate'
-        'available-asc': 'availableSeats',
-        'available-desc': '-availableSeats'
-      };
+    const sortOptions = {
+      'price-asc': 'price',
+      'price-desc': '-price',
+      'pricePerMonth-asc': 'pricePerMonth',
+      'pricePerMonth-desc': '-pricePerMonth',
+      'rating-desc': '-rating',
+      'date-asc': 'startDate',
+      'available-asc': 'availableSeats',
+      'available-desc': '-availableSeats'
+    };
 
-      const sortField = sortOptions[req.query.sort] || req.query.sort;
-      query = query.sort(sortField);
-    } else {
-      query = query.sort('-createdAt'); // Default sort by newest first
-    }
+    const sortField = query.sort ? (sortOptions[query.sort] || query.sort) : '-createdAt';
+    dbQuery.sort(sortField);
 
     // Apply pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 12;
+    const page = parseInt(query.page) || 1;
+    const limit = parseInt(query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    query = query.skip(skip).limit(limit);
-
-    // Select fields (exclude __v)
-    query = query.select('-__v');
+    dbQuery.skip(skip).limit(limit).select('-__v');
 
     // Execute query
-    const tours = await query;
-
-    // Get total count for pagination
-    const total = await Tour.countDocuments(filter);
+    const [tours, total] = await Promise.all([
+      dbQuery.exec(),
+      Tour.countDocuments(filter)
+    ]);
 
     res.status(200).json({
       status: 'success',
@@ -155,10 +145,19 @@ const getAllTours = async (req, res) => {
   }
 };
 
-// Get single tour with seat availability
+// Get single tour
 const getTour = async (req, res) => {
   try {
-    const tour = await Tour.findById(req.params.id).select('-__v');
+    const { id } = req.params;
+    const includeDeleted = parseBool(req.query.includeDeleted);
+
+    const query = Tour.findById(id);
+
+    if (!includeDeleted) {
+      query.find({ isDeleted: false, isActive: true });
+    }
+
+    const tour = await query.select('-__v');
 
     if (!tour) {
       return res.status(404).json({
@@ -167,15 +166,19 @@ const getTour = async (req, res) => {
       });
     }
 
+    // Check if tour is active (unless admin is viewing)
+    if (!tour.isActive && !includeDeleted) {
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Tour is not active',
+      });
+    }
+
     res.status(200).json({
       status: 'success',
       data: {
         tour,
-        seatInfo: {
-          totalSeats: tour.groupSize,
-          bookedSeats: tour.bookedSeats,
-          availableSeats: tour.availableSeats
-        },
+        seatInfo: tour.seatInfo,
         monthlyPaymentInfo: tour.monthlyPaymentInfo
       },
     });
@@ -199,12 +202,16 @@ const checkTourAvailability = async (req, res) => {
       });
     }
 
-    const tour = await Tour.findById(tourId).select('title groupSize bookedSeats availableSeats');
+    const tour = await Tour.findOne({
+      _id: tourId,
+      isActive: true,
+      isDeleted: false
+    }).select('title groupSize bookedSeats availableSeats');
 
     if (!tour) {
       return res.status(404).json({
         status: 'fail',
-        message: 'Tour not found',
+        message: 'Active tour not found',
       });
     }
 
@@ -220,7 +227,7 @@ const checkTourAvailability = async (req, res) => {
         bookedSeats: tour.bookedSeats,
         availableSeats: tour.availableSeats,
         requiredSeats: seatsNeeded,
-        isAvailable: isAvailable,
+        isAvailable,
         message: isAvailable
           ? `${seatsNeeded} seats are available for booking`
           : `Only ${tour.availableSeats} seats available (${seatsNeeded} needed)`
@@ -234,45 +241,24 @@ const checkTourAvailability = async (req, res) => {
   }
 };
 
-// Create tour (Admin) - UPDATED FOR MULTIPLE IMAGES
+// Create tour
 const createTour = async (req, res) => {
   try {
-    // Get uploaded images paths (multiple files)
+    // Parse tour data
+    const tourData = typeof req.body.tourData === 'string'
+      ? JSON.parse(req.body.tourData)
+      : req.body;
+
+    // Handle images
     let images = [];
-    if (req.files && req.files.images) {
-      // If multiple images
-      images = req.files.images.map(file =>
-        `uploads/tour-packages/${file.filename}`
-      );
+    if (req.files?.images) {
+      images = req.files.images.map(file => `uploads/tour-packages/${file.filename}`);
     } else if (req.file) {
-      // If single image (backward compatibility)
       images = [`uploads/tour-packages/${req.file.filename}`];
     }
 
-    // Get highlight media files if any
-    let highlightMedia = [];
-    if (req.files && req.files.highlightMedia) {
-      highlightMedia = req.files.highlightMedia.map(file => ({
-        filename: file.filename,
-        path: `uploads/tour-highlights/${file.filename}`
-      }));
-    }
-
-    // Parse tourData from JSON string
-    let tourData = req.body;
-    if (typeof req.body.tourData === 'string') {
-      try {
-        tourData = JSON.parse(req.body.tourData);
-      } catch (parseErr) {
-        return res.status(400).json({
-          status: 'fail',
-          message: 'Invalid tourData JSON format',
-        });
-      }
-    }
-
     // Validate required fields
-    if (!images || images.length === 0) {
+    if (!images.length) {
       return res.status(400).json({
         status: 'fail',
         message: 'At least one tour image is required',
@@ -286,6 +272,7 @@ const createTour = async (req, res) => {
       });
     }
 
+    // Validate country
     const validCountries = ['Dubai', 'Greece', 'Indonesia', 'Turkey', 'Thailand'];
     if (!validCountries.includes(tourData.country)) {
       return res.status(400).json({
@@ -294,71 +281,36 @@ const createTour = async (req, res) => {
       });
     }
 
-    // Convert groupSize to number if it's a string
-    let groupSize = tourData.groupSize;
-    if (typeof groupSize === 'string') {
-      groupSize = parseInt(groupSize);
-      if (isNaN(groupSize) || groupSize < 1) {
-        return res.status(400).json({
-          status: 'fail',
-          message: 'Group size must be a positive number',
-        });
-      }
-    }
-
-    // Process highlights with media
-    let processedHighlights = [];
-    if (tourData.highlights && Array.isArray(tourData.highlights)) {
-      processedHighlights = tourData.highlights.map((highlight, index) => {
-        // If highlight is a string, convert to object
-        if (typeof highlight === 'string') {
-          return {
-            text: highlight,
-            media: null,
-            mediaType: null
-          };
-        }
-
-        // If highlight is an object with media reference
-        if (highlight.mediaIndex !== undefined && highlightMedia[highlight.mediaIndex]) {
-          return {
-            text: highlight.text,
-            media: highlightMedia[highlight.mediaIndex].path,
-            mediaType: highlight.mediaType || 'image'
-          };
-        }
-
-        return highlight;
-      });
-    }
-
-    // Build the final object to save
+    // Prepare tour data
     const newTourData = {
       ...tourData,
-      startDate: tourData.startDate, // Changed from date to startDate
-      images: images, // Changed from image to images (array)
-      groupSize: groupSize,
+      startDate: tourData.startDate,
+      images,
+      groupSize: parseInt(tourData.groupSize) || 1,
       pricePerMonth: parseFloat(tourData.pricePerMonth) || 0,
-      bookedSeats: 0, // Start with 0 booked seats
-      featured: tourData.featured === true || tourData.featured === 'true',
-      highlights: processedHighlights,
+      bookedSeats: 0,
+      featured: parseBool(tourData.featured),
       rating: tourData.rating ? parseFloat(tourData.rating) : 4.8,
-      originalPrice: tourData.originalPrice
-        ? parseFloat(tourData.originalPrice)
-        : undefined,
+      originalPrice: tourData.originalPrice ? parseFloat(tourData.originalPrice) : undefined,
+      isActive: tourData.isActive !== false,
+      isDeleted: false,
+      deletedAt: null,
     };
 
+    // If inactive, mark as deleted
+    if (newTourData.isActive === false) {
+      newTourData.isDeleted = true;
+      newTourData.deletedAt = new Date();
+    }
+
+    // Create tour
     const newTour = await Tour.create(newTourData);
 
     res.status(201).json({
       status: 'success',
       data: {
         tour: newTour,
-        seatInfo: {
-          totalSeats: newTour.groupSize,
-          bookedSeats: newTour.bookedSeats,
-          availableSeats: newTour.availableSeats
-        },
+        seatInfo: newTour.seatInfo,
         monthlyPaymentInfo: newTour.monthlyPaymentInfo
       },
     });
@@ -371,10 +323,13 @@ const createTour = async (req, res) => {
   }
 };
 
-// Update tour (Admin) - UPDATED FOR MULTIPLE IMAGES
+// Update tour
 const updateTour = async (req, res) => {
   try {
-    const existingTour = await Tour.findById(req.params.id);
+    const { id } = req.params;
+
+    // Check if tour exists
+    const existingTour = await Tour.findById(id);
     if (!existingTour) {
       return res.status(404).json({
         status: 'fail',
@@ -382,55 +337,23 @@ const updateTour = async (req, res) => {
       });
     }
 
-    let tourData = req.body;
-    if (typeof req.body.tourData === 'string') {
-      tourData = JSON.parse(req.body.tourData);
-    }
+    // Parse tour data
+    const tourData = typeof req.body.tourData === 'string'
+      ? JSON.parse(req.body.tourData)
+      : req.body;
 
+    // Prepare update data
     const updateData = { ...tourData };
 
-    // Handle multiple images update
-    if (req.files && req.files.images) {
-      updateData.images = req.files.images.map(file =>
-        `uploads/tour-packages/${file.filename}`
-      );
-    } else if (req.file) {
-      // If updating single image (append to existing)
-      updateData.$push = updateData.$push || {};
-      updateData.$push.images = `uploads/tour-packages/${req.file.filename}`;
+    // Handle images
+    if (req.files?.images) {
+      updateData.images = req.files.images.map(file => `uploads/tour-packages/${file.filename}`);
     }
 
-    // Handle highlight media files
-    if (req.files && req.files.highlightMedia) {
-      const highlightMedia = req.files.highlightMedia.map(file =>
-        `uploads/tour-highlights/${file.filename}`
-      );
-
-      // Process highlights to add media
-      if (tourData.highlights && Array.isArray(tourData.highlights)) {
-        updateData.highlights = tourData.highlights.map((highlight, index) => {
-          if (highlight.mediaIndex !== undefined && highlightMedia[highlight.mediaIndex]) {
-            return {
-              ...highlight,
-              media: highlightMedia[highlight.mediaIndex]
-            };
-          }
-          return highlight;
-        });
-      }
-    }
-
-    // Convert groupSize to number if it exists and is a string
+    // Handle groupSize
     if (updateData.groupSize && typeof updateData.groupSize === 'string') {
       updateData.groupSize = parseInt(updateData.groupSize);
-      if (isNaN(updateData.groupSize) || updateData.groupSize < 1) {
-        return res.status(400).json({
-          status: 'fail',
-          message: 'Group size must be a positive number',
-        });
-      }
 
-      // Ensure bookedSeats doesn't exceed new groupSize
       if (updateData.groupSize < existingTour.bookedSeats) {
         return res.status(400).json({
           status: 'fail',
@@ -439,15 +362,24 @@ const updateTour = async (req, res) => {
       }
     }
 
-    // Ensure pricePerMonth is a number
+    // Handle pricing
     if (updateData.pricePerMonth && typeof updateData.pricePerMonth === 'string') {
       updateData.pricePerMonth = parseFloat(updateData.pricePerMonth);
     }
 
-    updateData.featured = tourData.featured === true || tourData.featured === 'true';
+    updateData.featured = parseBool(tourData.featured);
 
+    // Handle active/deleted status
+    if (tourData.isActive !== undefined) {
+      const isActive = parseBool(tourData.isActive);
+      updateData.isActive = isActive;
+      updateData.isDeleted = !isActive;
+      updateData.deletedAt = isActive ? null : new Date();
+    }
+
+    // Update tour
     const updatedTour = await Tour.findByIdAndUpdate(
-      req.params.id,
+      id,
       updateData,
       { new: true, runValidators: true }
     );
@@ -456,11 +388,7 @@ const updateTour = async (req, res) => {
       status: 'success',
       data: {
         tour: updatedTour,
-        seatInfo: {
-          totalSeats: updatedTour.groupSize,
-          bookedSeats: updatedTour.bookedSeats,
-          availableSeats: updatedTour.availableSeats
-        },
+        seatInfo: updatedTour.seatInfo,
         monthlyPaymentInfo: updatedTour.monthlyPaymentInfo
       },
     });
@@ -473,11 +401,12 @@ const updateTour = async (req, res) => {
   }
 };
 
-// Delete tour (permanent delete since we removed soft delete)
+// Soft delete tour
 const deleteTour = async (req, res) => {
   try {
-    const tour = await Tour.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
+    const tour = await Tour.findById(id);
     if (!tour) {
       return res.status(404).json({
         status: 'fail',
@@ -485,10 +414,21 @@ const deleteTour = async (req, res) => {
       });
     }
 
+    // Soft delete
+    tour.isDeleted = true;
+    tour.isActive = false;
+    tour.deletedAt = new Date();
+    await tour.save();
+
     res.status(200).json({
       status: 'success',
-      message: 'Tour deleted successfully',
-      data: null,
+      message: 'Tour soft deleted successfully',
+      data: {
+        tourId: tour._id,
+        deletedAt: tour.deletedAt,
+        isDeleted: tour.isDeleted,
+        isActive: tour.isActive
+      },
     });
   } catch (err) {
     res.status(400).json({
@@ -501,7 +441,11 @@ const deleteTour = async (req, res) => {
 // Get featured tours
 const getFeaturedTours = async (req, res) => {
   try {
-    const featuredTours = await Tour.find({ featured: true })
+    const featuredTours = await Tour.find({
+      featured: true,
+      isActive: true,
+      isDeleted: false
+    })
       .select('-__v')
       .limit(6)
       .sort('-createdAt');
