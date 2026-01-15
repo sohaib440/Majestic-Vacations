@@ -67,13 +67,18 @@ export const getTourByIdAPI = async (id: string, includeDeleted?: boolean): Prom
     const response = await api.get(`/tour/${id}${params.toString() ? `?${params.toString()}` : ''}`);
     return response.data;
   } catch (error: any) {
-    // Handle 404 and other errors gracefully
+    console.error('Error fetching tour:', error);
+
+    // If 404, return a structured error response
     if (error.response?.status === 404) {
       return {
         status: 'fail',
-        message: 'Tour not found'
+        message: `Tour with ID "${id}" not found in the database`,
+        data: undefined
       };
     }
+
+    // For other errors, throw to be caught by React Query
     throw error;
   }
 };

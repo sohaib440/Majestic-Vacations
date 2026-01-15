@@ -149,13 +149,13 @@ const getAllTours = async (req, res) => {
 const getTour = async (req, res) => {
   try {
     const { id } = req.params;
-    const includeDeleted = parseBool(req.query.includeDeleted);
+    // const includeDeleted = parseBool(req.query.includeDeleted);
 
     const query = Tour.findById(id);
 
-    if (!includeDeleted) {
-      query.find({ isDeleted: false, isActive: true });
-    }
+    // if (!includeDeleted) {
+      // query.find({ isDeleted: false, isActive: true });
+    // }
 
     const tour = await query.select('-__v');
 
@@ -167,12 +167,12 @@ const getTour = async (req, res) => {
     }
 
     // Check if tour is active (unless admin is viewing)
-    if (!tour.isActive && !includeDeleted) {
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Tour is not active',
-      });
-    }
+    // if (!tour.isActive && !includeDeleted) {
+    //   return res.status(404).json({
+    //     status: 'fail',
+    //     message: 'Tour is not active',
+    //   });
+    // }
 
     res.status(200).json({
       status: 'success',
