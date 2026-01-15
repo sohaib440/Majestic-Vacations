@@ -1,9 +1,10 @@
+
 const Payment = require("../models/paymentSchema");
 const Booking = require("../models/booking.model");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 const paypal = require("paypal-rest-sdk");
 
-// Configure PayPal (remains the same)
+// Configure PayPal
 paypal.configure({
   mode: process.env.PAYPAL_MODE || "sandbox",
   client_id: process.env.PAYPAL_CLIENT_ID,
@@ -12,18 +13,34 @@ paypal.configure({
 
 exports.createPayment = async (req, res) => {
   try {
-    const { bookingId, provider, paymentPlan,installmentNumber} = req.body;
+    const { bookingId, provider, paymentPlan, installmentNumber } = req.body;
 
-    console.log("Creating payment →", { bookingId, provider, paymentPlan });
+    console.log("🔄 Creating payment →", { 
+      bookingId, 
+      provider, 
+      paymentPlan, 
+      installmentNumber 
+    });
 
     const booking = await Booking.findById(bookingId).populate("tour");
-    console.log("the booking is ",booking)
+    
     if (!booking) {
-      return res.status(404).json({ success: false, message: "Booking not found" });
+      return res.status(404).json({ 
+        success: false, 
+        message: "Booking not found" 
+      });
     }
 
+    console.log(`📋 Booking found: ${booking.bookingReference}, Status: ${booking.bookingStatus}`);
+    console.log(`💰 Payment Status: ${booking.paymentStatus}, Seats: ${booking.seatsBooked}`);
+
+    // Validate booking eligibility
     if (booking.bookingStatus !== "pending" || booking.paymentStatus !== "unpaid") {
-      return res.status(400).json({ success: false, message: "Booking not eligible for payment" });
+      console.log(`❌ Booking not eligible: Status=${booking.bookingStatus}, Payment=${booking.paymentStatus}`);
+      return res.status(400).json({ 
+        success: false, 
+        message: "Booking not eligible for payment" 
+      });
     }
 
     // Calculate amount
@@ -31,17 +48,27 @@ exports.createPayment = async (req, res) => {
       ? booking.pricing.totalAmount
       : booking.pricing.monthlyAmount;
 
-    if (paymentPlan === "monthly" && installmentNumber > booking.pricing.monthsRequired) {
-      return res.status(400).json({ success: false, message: "Invalid installment number" });
+    console.log(`💵 Calculated amount: ${amount} ${booking.pricing.currency}`);
+
+    if (paymentPlan === "monthly") {
+      if (installmentNumber > booking.pricing.monthsRequired) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid installment number" 
+        });
+      }
+      console.log(`📅 Monthly payment: Installment ${installmentNumber} of ${booking.pricing.monthsRequired}`);
     }
 
-    amount = Math.round(amount * 100); // cents
+    amount = Math.round(amount * 100); // Convert to cents
 
     let paymentData;
     let clientResponse;
 
+    // STRIPE PAYMENT
     if (provider === "stripe") {
-      // ── STRIPE CHECKOUT SESSION (hosted page) ──
+      console.log(`💳 Processing Stripe payment for ${booking.bookingReference}`);
+      
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
@@ -62,9 +89,14 @@ exports.createPayment = async (req, res) => {
           bookingId: booking._id.toString(),
           bookingReference: booking.bookingReference,
           paymentPlan,
-          installmentNumber
+          installmentNumber: installmentNumber || "1",
+          seatsBooked: booking.seatsBooked.toString(),
+          tourId: booking.tour?._id?.toString() || ""
         },
       });
+
+      console.log(`✅ Stripe session created: ${session.id}`);
+      console.log(`🔗 Checkout URL: ${session.url}`);
 
       paymentData = {
         booking: booking._id,
@@ -74,13 +106,23 @@ exports.createPayment = async (req, res) => {
         currency: booking.pricing.currency,
         status: "created",
         paymentPlan,
-        installmentNumber,
+        installmentNumber: installmentNumber || 1,
+        metadata: {
+          bookingReference: booking.bookingReference,
+          seatsBooked: booking.seatsBooked,
+          tourTitle: booking.tour?.title
+        }
       };
 
-      clientResponse = { checkoutUrl: session.url };
+      clientResponse = { 
+        checkoutUrl: session.url,
+        sessionId: session.id
+      };
     }
+    // PAYPAL PAYMENT
     else if (provider === "paypal") {
-      // Keep PayPal as redirect (you can also upgrade to PayPal Smart Buttons later)
+      console.log(`💰 Processing PayPal payment for ${booking.bookingReference}`);
+      
       const createPaymentJson = {
         intent: "sale",
         payer: { payment_method: "paypal" },
@@ -117,35 +159,53 @@ exports.createPayment = async (req, res) => {
 
       const approvalUrl = paypalPayment.links.find(link => link.rel === "approval_url")?.href;
       clientResponse = { approvalUrl };
+      
+      console.log(`✅ PayPal payment created: ${paypalPayment.id}`);
     }
     else {
-      return res.status(400).json({ success: false, message: "Invalid provider" });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid payment provider" 
+      });
     }
 
     // Save payment record
-    await Payment.create(paymentData);
+    const savedPayment = await Payment.create(paymentData);
+    console.log(`💾 Payment record saved: ${savedPayment._id}`);
 
-    // Mark as partial for monthly payments
+    // Update booking for monthly payments
     if (paymentPlan === "monthly") {
       booking.paymentStatus = "partial";
       await booking.save();
+      console.log(`📊 Booking marked as partial payment`);
     }
 
     res.status(201).json({
       success: true,
-      data: paymentData,
+      message: "Payment initiated successfully",
+      data: savedPayment,
       clientData: clientResponse,
     });
+
   } catch (error) {
-    console.error("Payment creation error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Payment creation error:", error.message);
+    console.error(error.stack);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
-// GET ALL
+
+// GET ALL PAYMENTS
 exports.getAllPayments = async (req, res) => {
   try {
     const payments = await Payment.find()
-      .populate("booking")
+      .populate({
+        path: "booking",
+        populate: { path: "tour" }
+      })
       .sort({ createdAt: -1 });
 
     res.json({
@@ -154,25 +214,41 @@ exports.getAllPayments = async (req, res) => {
       data: payments,
     });
   } catch (error) {
+    console.error("Get payments error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// GET BY ID
+// GET PAYMENT BY ID
 exports.getPaymentById = async (req, res) => {
   try {
-    const payment = await Payment.findById(req.params.id).populate("booking");
+    const payment = await Payment.findById(req.params.id)
+      .populate({
+        path: "booking",
+        populate: { path: "tour" }
+      });
 
-    if (!payment)
-      return res.status(404).json({ success: false, message: "Payment not found" });
+    if (!payment) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Payment not found" 
+      });
+    }
 
-    res.json({ success: true, data: payment });
+    res.json({ 
+      success: true, 
+      data: payment 
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error("Get payment error:", error);
+    res.status(400).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
-// UPDATE
+// UPDATE PAYMENT
 exports.updatePayment = async (req, res) => {
   try {
     const payment = await Payment.findByIdAndUpdate(
@@ -181,33 +257,72 @@ exports.updatePayment = async (req, res) => {
       { new: true, runValidators: true }
     );
 
-    if (!payment)
-      return res.status(404).json({ success: false, message: "Payment not found" });
-
-    // Sync booking status
-    if (payment.status === "succeeded") {
-      await Booking.findByIdAndUpdate(payment.booking, {
-        paymentStatus: "paid",
+    if (!payment) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Payment not found" 
       });
     }
 
-    res.json({ success: true, data: payment });
+    // Sync booking status when payment succeeds
+    if (payment.status === "succeeded") {
+      const booking = await Booking.findById(payment.booking);
+      if (booking) {
+        booking.paymentStatus = payment.paymentPlan === "monthly" ? "partial" : "paid";
+        
+        // For full payments, confirm booking and allocate seats
+        if (payment.paymentPlan === "full" && booking.bookingStatus === "pending") {
+          booking.bookingStatus = "confirmed";
+          
+          // Allocate seats
+          const Tour = require("../models/tourSchema");
+          await Tour.findByIdAndUpdate(
+            booking.tour,
+            { $inc: { bookedSeats: booking.seatsBooked } }
+          );
+          
+          console.log(`✅ Manual update: Seats allocated for booking ${booking.bookingReference}`);
+        }
+        
+        await booking.save();
+      }
+    }
+
+    res.json({ 
+      success: true, 
+      message: "Payment updated successfully",
+      data: payment 
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error("Update payment error:", error);
+    res.status(400).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
 
-// DELETE
+// DELETE PAYMENT
 exports.deletePayment = async (req, res) => {
   try {
     const payment = await Payment.findByIdAndDelete(req.params.id);
 
-    if (!payment)
-      return res.status(404).json({ success: false, message: "Payment not found" });
+    if (!payment) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Payment not found" 
+      });
+    }
 
-    res.json({ success: true, message: "Payment deleted successfully" });
+    res.json({ 
+      success: true, 
+      message: "Payment deleted successfully" 
+    });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error("Delete payment error:", error);
+    res.status(400).json({ 
+      success: false, 
+      message: error.message 
+    });
   }
 };
-

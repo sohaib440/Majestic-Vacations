@@ -7,28 +7,45 @@ const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const cors = require("cors");
 const path = require("path");
+const bodyParser = require("body-parser");
 
+/* ROUTES */
 const indexRouter = require("./routes/index");
+const stripeWebhookRouter = require("./webhooks/stripeWebhook");
+const paypalWebhookRouter = require("./webhooks/paypalWebhook");
+
+/* DB */
 const { connectDatabase } = require("./config/database");
 const initializeAdmin = require("./utils/initializeAdmin");
 
 const app = express();
 
-/*  TRUST PROXY (for rate limit behind proxy) */
+/* =========================================================
+   1️⃣ STRIPE WEBHOOK — MUST BE FIRST (RAW BODY)
+========================================================= */
+app.use(
+  "/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  stripeWebhookRouter
+);
+
+/* =========================================================
+   2️⃣ TRUST PROXY (for ngrok / reverse proxy)
+========================================================= */
 app.set("trust proxy", 1);
 
-/*  SECURITY HEADERS */
+/* =========================================================
+   3️⃣ SECURITY HEADERS
+========================================================= */
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
   })
 );
 
-/*  SANITIZATION */
-app.use(mongoSanitize());
-app.use(xss());
-
-/*  CORS CONFIGURATION */
+/* =========================================================
+   4️⃣ CORS
+========================================================= */
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
@@ -36,7 +53,9 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-/*  RATE LIMITING */
+/* =========================================================
+   5️⃣ RATE LIMITING
+========================================================= */
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -46,23 +65,36 @@ app.use(
   })
 );
 
-/*  STATIC FILES (UPLOADS) */
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
-
-/*  WEBHOOK ROUTES – Use bodyParser.raw only here */
-app.use(
-  "/webhook",
-  require("body-parser").raw({ type: "application/json" }),
-  require("./webhooks/stripeWebhook")
-);
-
-/*  OTHER ROUTES – normal JSON parsing */
+/* =========================================================
+   6️⃣ BODY PARSERS (AFTER WEBHOOK)
+========================================================= */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/webhooks/paypal", require("./webhooks/paypalWebhook"));
+
+/* =========================================================
+   7️⃣ SANITIZATION (AFTER BODY PARSING)
+========================================================= */
+app.use(mongoSanitize());
+app.use(xss());
+
+/* =========================================================
+   8️⃣ STATIC FILES
+========================================================= */
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+
+/* =========================================================
+   9️⃣ OTHER WEBHOOKS (NOT STRIPE)
+========================================================= */
+app.use("/webhooks/paypal", paypalWebhookRouter);
+
+/* =========================================================
+   🔟 API ROUTES
+========================================================= */
 app.use("/api", indexRouter);
 
-/*  DATABASE CONNECTION */
+/* =========================================================
+   1️⃣1️⃣ DATABASE CONNECTION
+========================================================= */
 connectDatabase()
   .then(() => {
     console.log("✅ Database connected");
@@ -72,17 +104,21 @@ connectDatabase()
     console.error("❌ Database connection failed:", err);
   });
 
-/*  ERROR HANDLER */
+/* =========================================================
+   1️⃣2️⃣ GLOBAL ERROR HANDLER
+========================================================= */
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("🔥 ERROR:", err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || "Server Error",
+    message: err.message || "Internal Server Error",
   });
 });
 
-/*  START SERVER */
+/* =========================================================
+   1️⃣3️⃣ START SERVER
+========================================================= */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

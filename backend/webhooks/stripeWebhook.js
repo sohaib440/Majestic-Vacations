@@ -2,18 +2,17 @@
 const express = require("express");
 const router = express.Router();
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
-const Payment = require("../models/paymentSchema");
-const Booking = require("../models/booking.model");
-const Package =require("../models/tourSchema")
-// IMPORTANT: Use raw body parser for Stripe signature verification
 const bodyParser = require("body-parser");
 
-// Log when webhook module loads
-console.log("🚀 Stripe Webhook route initialized - listening for events");
+const Payment = require("../models/paymentSchema");
+const Booking = require("../models/booking.model");
+const Tour = require("../models/tourSchema");
+
+console.log("🚀 Stripe Webhook route initialized");
 
 router.post(
   "/",
-  bodyParser.raw({ type: "application/json" }), // MUST be raw for signature
+  bodyParser.raw({ type: "application/json" }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
@@ -24,91 +23,136 @@ router.post(
         sig,
         process.env.STRIPE_WEBHOOK_SECRET
       );
-      console.log(`[Webhook] ✅ Event verified: ${event.type} (ID: ${event.id})`);
+      console.log(`✅ Webhook verified: ${event.type}`);
     } catch (err) {
-      console.error(`[Webhook] ❌ Signature verification failed: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      console.error("❌ Signature verification failed:", err.message);
+      return res.status(400).send("Webhook Error");
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // Handle successful Checkout payment (most important event)
-    // ──────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    // CHECKOUT COMPLETED
+    // ─────────────────────────────────────────────
     if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const bookingId = session.metadata?.bookingId;
+      const stripeSession = event.data.object;
 
-      console.log(`[Webhook] 💰 Checkout completed! Session: ${session.id}`);
-      console.log(`[Webhook] Booking ID from metadata: ${bookingId}`);
+      const bookingId = stripeSession.metadata?.bookingId;
+      const paymentPlan = stripeSession.metadata?.paymentPlan || "full";
 
       if (!bookingId) {
-        console.error("[Webhook] ❌ No bookingId found in session metadata");
-        return res.sendStatus(200); // Still acknowledge
+        console.error("❌ bookingId missing in metadata");
+        return res.json({ received: true });
       }
 
       try {
-        // 1. Find & update Payment record
-        const payment = await Payment.findOne({
-          providerPaymentId: session.id,
-          booking: bookingId,
+        // 1️⃣ UPDATE PAYMENT
+        let payment = await Payment.findOne({
+          providerPaymentId: stripeSession.id,
         });
 
-        if (payment && payment.status !== "succeeded") {
+        if (!payment) {
+          payment = await Payment.create({
+            booking: bookingId,
+            provider: "stripe",
+            providerPaymentId: stripeSession.id,
+            amount: stripeSession.amount_total / 100,
+            currency: stripeSession.currency,
+            status: "succeeded",
+            paymentPlan,
+            paidAt: new Date(),
+          });
+          console.log(`💾 Payment created: ${payment._id}`);
+        } else if (payment.status !== "succeeded") {
           payment.status = "succeeded";
           payment.paidAt = new Date();
           await payment.save();
-          console.log(`[Webhook] ✅ Payment ${payment._id} marked as succeeded`);
+          console.log(`💾 Payment updated to succeeded: ${payment._id}`);
         }
 
-        // 2. Find & update Booking
-        const booking = await Booking.findById(bookingId);
+        // 2️⃣ UPDATE BOOKING
+        const booking = await Booking.findById(bookingId).populate("tour");
         if (!booking) {
-          console.error(`[Webhook] ❌ Booking not found: ${bookingId}`);
-          return res.sendStatus(200);
+          console.error("❌ Booking not found:", bookingId);
+          return res.json({ received: true });
         }
 
-        // Prevent double-processing
+        // ⛔ Prevent duplicate processing
         if (booking.paymentStatus === "paid") {
-          console.log(`[Webhook] ℹ️ Booking already paid: ${booking.bookingReference}`);
-          return res.sendStatus(200);
+          console.log("ℹ️ Booking already paid, skipping seat allocation");
+          return res.json({ received: true });
         }
 
-        // Update based on payment plan
-        if (payment?.paymentPlan === "monthly") {
+        console.log(
+          `📋 Booking before update: Status=${booking.bookingStatus}, Payment=${booking.paymentStatus}`
+        );
+
+        if (paymentPlan === "monthly") {
           booking.paymentStatus = "partial";
-          console.log(`[Webhook] Monthly partial payment recorded`);
+          await booking.save();
+          console.log("📊 Monthly payment recorded");
         } else {
+          // Full payment
           booking.paymentStatus = "paid";
           booking.bookingStatus = "confirmed";
 
-          // Reserve seats - most important business action
-          await booking.confirmBooking();
-          console.log(`[Webhook] 🎉 Booking FULLY confirmed: ${booking.bookingReference}`);
+          // Ensure tour exists
+          if (!booking.tour) {
+            throw new Error("Tour not found for this booking");
+          }
+
+          // 3️⃣ ATOMIC SEAT ALLOCATION
+          const tour = await Tour.findOneAndUpdate(
+            {
+              _id: booking.tour._id,
+              bookedSeats: { $lte: booking.tour.groupSize - booking.seatsBooked },
+            },
+            { $inc: { bookedSeats: booking.seatsBooked } },
+            { new: true }
+          );
+
+          if (!tour) {
+            console.error("❌ Seat allocation failed: Overbooking detected");
+            return res.status(400).json({
+              success: false,
+              message: "Seat allocation failed: Overbooking detected",
+            });
+          }
+
+          console.log(
+            `🎟 Seats allocated: ${booking.seatsBooked} | ${tour.bookedSeats}/${tour.groupSize}`
+          );
+          await booking.save();
         }
 
-        await booking.save();
-        console.log(`[Webhook] 💾 Booking updated successfully`);
-        // Optional: Trigger email (implement in real project)
-        // await sendBookingConfirmationEmail(booking);
-
+        console.log(
+          `✅ Booking updated successfully: Status=${booking.bookingStatus}, Payment=${booking.paymentStatus}`
+        );
       } catch (err) {
-        console.error("[Webhook] ❌ Error processing success:", err.message);
-        // Still return 200 - Stripe will retry only on 4xx/5xx
+        console.error("❌ Webhook processing error:", err);
       }
     }
 
-    // ──────────────────────────────────────────────────────────────
-    // Optional: Handle other useful events
-    // ──────────────────────────────────────────────────────────────
-    else if (event.type === "payment_intent.payment_failed") {
-      const intent = event.data.object;
-      console.log(`[Webhook] ❌ Payment failed: ${intent.id}`);
-      // You could update payment.status = "failed"
-    } else if (event.type === "charge.refunded") {
-      console.log(`[Webhook] 🔄 Charge refunded: ${event.data.object.id}`);
-      // Update statuses accordingly
+    // ─────────────────────────────────────────────
+    // PAYMENT FAILED
+    // ─────────────────────────────────────────────
+    if (event.type === "payment_intent.payment_failed") {
+      await Payment.findOneAndUpdate(
+        { providerPaymentId: event.data.object.id },
+        { status: "failed" }
+      );
+      console.log("❌ Payment marked as failed");
     }
 
-    // Always acknowledge receipt to Stripe
+    // ─────────────────────────────────────────────
+    // REFUND
+    // ─────────────────────────────────────────────
+    if (event.type === "charge.refunded") {
+      await Payment.findOneAndUpdate(
+        { providerPaymentId: event.data.object.payment_intent },
+        { status: "refunded" }
+      );
+      console.log("🔄 Payment refunded");
+    }
+
     res.json({ received: true });
   }
 );

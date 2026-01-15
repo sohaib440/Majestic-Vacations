@@ -135,7 +135,7 @@ const AdminPackagesPage: React.FC = () => {
                 <TableHead>Group Size</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead>Featured</TableHead>
-                <TableHead>Status</TableHead>
+                {/* <TableHead>Status</TableHead> */}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -184,7 +184,7 @@ const AdminPackagesPage: React.FC = () => {
                       <Badge variant="outline">No</Badge>
                     )}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {tour.isActive ? (
                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                         Active
@@ -194,7 +194,7 @@ const AdminPackagesPage: React.FC = () => {
                         Inactive
                       </Badge>
                     )}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" asChild>

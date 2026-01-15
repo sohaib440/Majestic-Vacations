@@ -38,6 +38,7 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Generate booking reference
 bookingSchema.pre("save", function (next) {
   if (!this.bookingReference) {
     const ts = Date.now().toString(36).toUpperCase();
@@ -47,19 +48,66 @@ bookingSchema.pre("save", function (next) {
   next();
 });
 
+// Confirm booking and allocate seats
 bookingSchema.methods.confirmBooking = async function () {
-  if (this.bookingStatus === "confirmed") return this;
+  if (this.bookingStatus === "confirmed") {
+    console.log(`Booking ${this.bookingReference} already confirmed`);
+    return this;
+  }
 
   const Tour = mongoose.model("Tour");
   const tour = await Tour.findById(this.tour);
-  if (!tour) throw new Error("Tour not found");
-  if (tour.availableSeats < this.seatsBooked) throw new Error("Not enough seats available");
+  
+  if (!tour) {
+    throw new Error("Tour not found");
+  }
+  
+  // Check seat availability
+  const availableSeats = tour.groupSize - tour.bookedSeats;
+  if (availableSeats < this.seatsBooked) {
+    throw new Error(`Not enough seats available. Need ${this.seatsBooked}, but only ${availableSeats} left.`);
+  }
 
-  tour.bookedSeats += this.seatsBooked;
-  await tour.save();
+  // Use atomic operation to prevent race conditions
+  const updatedTour = await Tour.findByIdAndUpdate(
+    this.tour,
+    { $inc: { bookedSeats: this.seatsBooked } },
+    { new: true }
+  );
 
+  if (!updatedTour) {
+    throw new Error("Failed to update tour seats");
+  }
+
+  // Update booking status
   this.bookingStatus = "confirmed";
   this.paymentStatus = "paid";
+  
+  console.log(`✅ Booking confirmed: ${this.bookingReference}, seats allocated: ${this.seatsBooked}`);
+  console.log(`   Tour ${tour.title} - Booked seats: ${updatedTour.bookedSeats}/${updatedTour.groupSize}`);
+  
+  return this.save();
+};
+
+// Release seats when booking is cancelled
+bookingSchema.methods.releaseSeats = async function () {
+  if (this.bookingStatus === "cancelled") {
+    return this;
+  }
+
+  const Tour = mongoose.model("Tour");
+  
+  // Release seats only if they were previously confirmed
+  if (this.bookingStatus === "confirmed") {
+    await Tour.findByIdAndUpdate(
+      this.tour,
+      { $inc: { bookedSeats: -this.seatsBooked } },
+      { new: true }
+    );
+    console.log(`🔄 Released ${this.seatsBooked} seats for booking ${this.bookingReference}`);
+  }
+
+  this.bookingStatus = "cancelled";
   return this.save();
 };
 
