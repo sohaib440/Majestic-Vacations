@@ -89,16 +89,13 @@ const getAllTours = async (req, res) => {
     if (query.maxMonthlyPrice) monthlyPriceFilter.$lte = parseNumber(query.maxMonthlyPrice);
     if (Object.keys(monthlyPriceFilter).length > 0) filter.pricePerMonth = monthlyPriceFilter;
 
-    // Active/Deleted filters - SIMPLIFIED
+    // Active/Deleted filters - ONLY apply if explicitly provided
     if (query.isActive !== undefined) {
       filter.isActive = parseBool(query.isActive);
     }
 
     if (query.isDeleted !== undefined) {
       filter.isDeleted = parseBool(query.isDeleted);
-    } else if (!query.includeDeleted && !query.showAll) {
-      // Default: show only non-deleted tours
-      filter.isDeleted = false;
     }
 
     // Build query
@@ -149,14 +146,7 @@ const getAllTours = async (req, res) => {
 const getTour = async (req, res) => {
   try {
     const { id } = req.params;
-    // const includeDeleted = parseBool(req.query.includeDeleted);
-
     const query = Tour.findById(id);
-
-    // if (!includeDeleted) {
-      // query.find({ isDeleted: false, isActive: true });
-    // }
-
     const tour = await query.select('-__v');
 
     if (!tour) {
@@ -165,14 +155,6 @@ const getTour = async (req, res) => {
         message: 'Tour not found',
       });
     }
-
-    // Check if tour is active (unless admin is viewing)
-    // if (!tour.isActive && !includeDeleted) {
-    //   return res.status(404).json({
-    //     status: 'fail',
-    //     message: 'Tour is not active',
-    //   });
-    // }
 
     res.status(200).json({
       status: 'success',
@@ -297,12 +279,6 @@ const createTour = async (req, res) => {
       deletedAt: null,
     };
 
-    // If inactive, mark as deleted
-    if (newTourData.isActive === false) {
-      newTourData.isDeleted = true;
-      newTourData.deletedAt = new Date();
-    }
-
     // Create tour
     const newTour = await Tour.create(newTourData);
 
@@ -336,7 +312,6 @@ const updateTour = async (req, res) => {
         message: 'Tour not found',
       });
     }
-
     // Parse tour data
     const tourData = typeof req.body.tourData === 'string'
       ? JSON.parse(req.body.tourData)
@@ -369,12 +344,43 @@ const updateTour = async (req, res) => {
 
     updateData.featured = parseBool(tourData.featured);
 
-    // Handle active/deleted status
+    // FIXED LOGIC: Handle isActive and auto-set isDeleted
     if (tourData.isActive !== undefined) {
       const isActive = parseBool(tourData.isActive);
       updateData.isActive = isActive;
-      updateData.isDeleted = !isActive;
-      updateData.deletedAt = isActive ? null : new Date();
+
+      // If making tour active, it should not be deleted
+      if (isActive) {
+        updateData.isDeleted = false;
+        updateData.deletedAt = null;
+      }
+      // If making tour inactive, it should be marked as deleted
+      else {
+        updateData.isDeleted = true;
+        updateData.deletedAt = new Date();
+      }
+    }
+
+    // Also handle explicit isDeleted if provided (for admin override)
+    if (tourData.isDeleted !== undefined) {
+      const isDeleted = parseBool(tourData.isDeleted);
+      updateData.isDeleted = isDeleted;
+      updateData.deletedAt = isDeleted ? new Date() : null;
+
+      // If explicitly setting isDeleted, also set isActive accordingly
+      if (isDeleted) {
+        updateData.isActive = false;
+      } else {
+        updateData.isActive = true;
+      }
+    }
+
+    // IMPORTANT: Don't let bookedSeats exceed groupSize
+    if (updateData.groupSize && updateData.groupSize < existingTour.bookedSeats) {
+      return res.status(400).json({
+        status: 'fail',
+        message: `Cannot reduce group size below ${existingTour.bookedSeats} (currently booked seats)`,
+      });
     }
 
     // Update tour
@@ -400,7 +406,6 @@ const updateTour = async (req, res) => {
     });
   }
 };
-
 // Soft delete tour
 const deleteTour = async (req, res) => {
   try {

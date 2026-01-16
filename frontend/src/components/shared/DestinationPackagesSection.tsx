@@ -35,6 +35,7 @@ const DestinationPackagesSection: React.FC<DestinationPackagesSectionProps> = ({
                variant={variant}
                gridCols={{ sm: 1, md: 2, lg: 3 }}
                emptyMessage={`No packages available for ${country} at the moment.`}
+               isAdmin={false} 
                filters={{
                   isDeleted: false,
                   isActive: true

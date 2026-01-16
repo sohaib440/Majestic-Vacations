@@ -53,6 +53,7 @@ const tourSchema = z.object({
   ).default([]),
   featured: z.boolean().default(false),
   isActive: z.boolean().default(true),
+  isDeleted: z.boolean().default(false), // ← ADD THIS
 });
 
 type TourFormValues = z.infer<typeof tourSchema>;
@@ -98,7 +99,8 @@ const TourForm: React.FC<TourFormProps> = ({
       rating: initialData?.rating || 4.8,
       highlights: initialData?.highlights || [],
       featured: initialData?.featured || false,
-      isActive: initialData?.isActive || true,
+      isActive: initialData?.isActive ?? true,
+      isDeleted: initialData?.isDeleted || false, 
     },
   });
 
@@ -670,20 +672,18 @@ const TourForm: React.FC<TourFormProps> = ({
                       ? 'Tour is visible to users'
                       : 'Tour is hidden from users and marked as deleted'}
                   </FormDescription>
+                  {/* Remove the isDeleted check since it's not in form */}
+                  {initialData?.isDeleted && (
+                    <div className="text-sm text-red-500 mt-1">
+                      ⚠️ Tour is currently marked as deleted
+                    </div>
+                  )}
                 </div>
                 <FormControl>
                   <Switch
                     checked={field.value}
-                    onCheckedChange={(checked) => {
-                      field.onChange(checked);
-                      if (!checked) {
-                        // Warn user about deletion
-                        toast({
-                          title: 'Tour will be marked as deleted',
-                          description: 'Setting tour to inactive will mark it as deleted',
-                        });
-                      }
-                    }}
+                    onCheckedChange={field.onChange}
+                  // Remove disabled logic since isDeleted isn't in form
                   />
                 </FormControl>
               </FormItem>

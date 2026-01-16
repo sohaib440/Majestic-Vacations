@@ -18,8 +18,9 @@ interface PackagesGridProps extends Omit<PackageCardProps, 'tour'> {
    };
    className?: string;
    limit?: number;
-   country?: string; 
-   featured?: boolean; // Optional: show only featured
+   country?: string;
+   featured?: boolean;
+   isAdmin?: boolean; // Add this prop
 }
 
 const PackagesGrid: React.FC<PackagesGridProps> = ({
@@ -32,6 +33,7 @@ const PackagesGrid: React.FC<PackagesGridProps> = ({
    limit,
    country,
    featured,
+   isAdmin = false, // Default to false for public
    onInquire,
    onView
 }) => {
@@ -40,12 +42,18 @@ const PackagesGrid: React.FC<PackagesGridProps> = ({
       ...filters,
       ...(limit && { limit }),
       ...(country && { country }),
-      // For public views, ensure we don't show deleted tours
-      isDeleted: false,
-      isActive: true,
+      ...(featured !== undefined && { featured }),
    };
-   // Only add featured filter if explicitly provided (not undefined)
-   if (filters.includeDeleted || filters.showAll) {
+
+   // For public views (non-admin), ensure we only show active, non-deleted tours
+   if (!isAdmin) {
+      // Override any existing isDeleted/isActive filters
+      finalFilters.isDeleted = false;
+      finalFilters.isActive = true;
+   }
+   // If admin explicitly wants to see deleted tours, respect that
+   else if (filters.includeDeleted || filters.showAll) {
+      // Admin wants to see all, so remove the defaults
       delete finalFilters.isDeleted;
       delete finalFilters.isActive;
    }
