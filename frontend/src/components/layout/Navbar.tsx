@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.webp";
+import CurrencySelector from '@/components/shared/currency/CurrencySelector';
 
 const destinations = [
   { name: "Dubai", path: "/destinations/dubai", flag: "🇦🇪", color: "hover:text-[#CE1126]" },
@@ -226,6 +227,10 @@ export function Navbar() {
                   <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent rounded-full" />
                 )}
               </Link>
+
+              <div className="hidden lg:flex items-center mr-4">
+                <CurrencySelector variant="compact" showLabel={false} />
+              </div>
             </div>
 
             {/* CTA Button - Desktop */}
@@ -342,6 +347,38 @@ export function Navbar() {
               >
                 Contact Us
               </Link>
+
+              <div className="px-4 py-3 border-t border-border/50">
+                <div className="text-sm font-semibold text-foreground/80 mb-2">
+                  Currency
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { code: 'USD', flag: '🇺🇸', name: 'US Dollar' },
+                    { code: 'AED', flag: '🇦🇪', name: 'UAE Dirham' },
+                    { code: 'TRY', flag: '🇹🇷', name: 'Turkish Lira' },
+                    { code: 'EUR', flag: '🇪🇺', name: 'Euro' },
+                    { code: 'THB', flag: '🇹🇭', name: 'Thai Baht' },
+                    { code: 'IDR', flag: '🇮🇩', name: 'Rupiah' },
+                  ].map((currency) => (
+                    <button
+                      key={currency.code}
+                      onClick={() => {
+                        // You'll need to add setCurrency to your mobile menu logic
+                        // Or use a context/state management solution
+                        setIsOpen(false);
+                      }}
+                      className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center gap-2 ${currentCurrency === currency.code
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-foreground/70 hover:bg-primary/5'
+                        }`}
+                    >
+                      <span className="text-lg">{currency.flag}</span>
+                      <span className="font-medium">{currency.code}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Mobile CTA */}
               <div className="px-4 pt-4 pb-6">
