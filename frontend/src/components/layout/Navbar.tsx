@@ -12,7 +12,6 @@ import logo from "@/assets/logo.webp";
 import CurrencySelector from '@/components/shared/currency/CurrencySelector';
 import { useCurrency } from '@/hooks/useCurrency';
 
-
 const destinations = [
   { name: "Dubai", path: "/destinations/dubai", flag: "🇦🇪", color: "hover:text-[#CE1126]" },
   { name: "Turkey", path: "/destinations/turkey", flag: "🇹🇷", color: "hover:text-[#E30A17]" },
@@ -26,18 +25,11 @@ const aboutUsItems = [
   { name: "About Us", path: "/about" },
 ];
 
-const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "Packages", path: "/packages" },
-  { name: "Contact Us", path: "/contact" },
-];
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [isHoveringDestinations, setIsHoveringDestinations] = useState(false);
   const [isHoveringAboutUs, setIsHoveringAboutUs] = useState(false);
-  // const [currentCurrency, setCurrentCurrency] = useState("USD");
   const { currentCurrency, setCurrency } = useCurrency();
   const location = useLocation();
   const navRef = useRef<HTMLElement>(null);
@@ -46,15 +38,10 @@ export function Navbar() {
   const isDestinationActive = destinations.some((d) => location.pathname === d.path);
   const isAboutUsActive = aboutUsItems.some((item) => location.pathname === item.path);
 
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
+  // Close mobile menu on route change
   useEffect(() => setIsOpen(false), [location.pathname]);
 
+  // Close mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
@@ -65,6 +52,7 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -74,16 +62,86 @@ export function Navbar() {
     return () => { document.body.style.overflow = "unset"; };
   }, [isOpen]);
 
+  // Scroll effect for navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const threshold = windowHeight * 0.5; // 50vh
+
+      // Calculate progress from 0 to 1
+      const progress = Math.min(scrollY / threshold, 1);
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial call
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Calculate background color based on scroll progress
+  const getBackgroundColor = () => {
+    if (scrollProgress === 0) {
+      return "transparent"; // Fully transparent at top
+    }
+
+    // Calculate opacity from 0 to 0.95 based on scroll progress
+    const opacity = scrollProgress * 0.95;
+
+    // Return primary color with calculated opacity
+    return `hsl(var(--primary) / ${opacity})`;
+  };
+
+  // Calculate text color based on scroll progress
+  const getTextColor = () => {
+    if (scrollProgress === 0) {
+      return "hsl(var(--foreground))"; // Dark text at top for light background
+    }
+
+    // When we have any background color, use white text
+    return "hsl(var(--primary-foreground))"; // White text
+  };
+
+  // Determine if navbar has background (for border/box-shadow)
+  const hasBackground = scrollProgress > 0;
+
+  // Helper function for link styles
+  const getLinkStyles = (isActiveLink: boolean) => {
+    const baseStyles = "px-2 py-1 text-sm font-medium transition-all duration-300";
+
+    if (hasBackground) {
+      // When scrolled - white text
+      return `${baseStyles} ${isActiveLink ? "text-primary-foreground font-semibold" : "text-primary-foreground/90 hover:text-primary-foreground"}`;
+    } else {
+      // When at top - dark text
+      return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
+    }
+  };
+
+  // Helper function for dropdown trigger styles
+  const getDropdownTriggerStyles = (isActiveLink: boolean) => {
+    const baseStyles = "flex items-center gap-1 px-2 py-1 text-sm font-medium transition-all duration-300 group";
+
+    if (hasBackground) {
+      return `${baseStyles} ${isActiveLink ? "text-primary-foreground font-semibold" : "text-primary-foreground/90 hover:text-primary-foreground"}`;
+    } else {
+      return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
+    }
+  };
+
   return (
     <>
       <nav
         ref={navRef}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? "bg-white/90 backdrop-blur-xl shadow-lg border-b border-white/30"
-            : "bg-gradient-to-b from-white/95 via-white/90 to-transparent backdrop-blur-lg"
-        }`}
-        style={{ height: "80px", willChange: "transform, background-color" }}
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out"
+        style={{
+          height: "80px",
+          backgroundColor: getBackgroundColor(),
+          color: getTextColor(),
+          backdropFilter: hasBackground ? "blur(10px)" : "none",
+          boxShadow: hasBackground ? "0 4px 20px rgba(0, 0, 0, 0.15)" : "none",
+          borderBottom: hasBackground ? "1px solid hsl(var(--border))" : "none",
+        }}
       >
         <div className="container mx-auto px-4 lg:px-8 h-full">
           <div className="flex items-center justify-between h-full">
@@ -94,7 +152,10 @@ export function Navbar() {
                 alt="Majestic Vacations"
                 className="h-12 w-auto transition-all duration-500 group-hover:scale-105 group-hover:rotate-2"
               />
-              <span className="hidden lg:inline text-xl font-serif font-semibold text-gradient-majestic">
+              <span
+                className="hidden lg:inline text-xl font-serif font-semibold"
+                style={{ color: getTextColor() }}
+              >
                 Majestic Vacations
               </span>
             </Link>
@@ -103,31 +164,25 @@ export function Navbar() {
             <div className="hidden lg:flex items-center gap-8">
               {/* Home */}
               <Link to="/" className="relative group">
-                <div className={`px-2 py-1 text-sm font-medium transition-all duration-300 ${
-                  isActive("/") ? "text-primary font-semibold" : "text-foreground/80 hover:text-primary"
-                }`}>
+                <div className={getLinkStyles(isActive("/"))}>
                   Home
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${
-                    isActive("/") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
-                  }`} />
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                    }`} />
                 </div>
                 {isActive("/") && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent rounded-full" />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
                 )}
               </Link>
 
               {/* Packages */}
               <Link to="/packages" className="relative group">
-                <div className={`px-2 py-1 text-sm font-medium transition-all duration-300 ${
-                  isActive("/packages") ? "text-primary font-semibold" : "text-foreground/80 hover:text-primary"
-                }`}>
+                <div className={getLinkStyles(isActive("/packages"))}>
                   Packages
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${
-                    isActive("/packages") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
-                  }`} />
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/packages") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                    }`} />
                 </div>
                 {isActive("/packages") && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent rounded-full" />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
                 )}
               </Link>
 
@@ -139,21 +194,18 @@ export function Navbar() {
               >
                 <DropdownMenu open={isHoveringDestinations} onOpenChange={setIsHoveringDestinations}>
                   <DropdownMenuTrigger className="outline-none">
-                    <div className={`flex items-center gap-1 px-2 py-1 text-sm font-medium transition-all duration-300 group ${
-                      isDestinationActive ? "text-primary font-semibold" : "text-foreground/80 hover:text-primary"
-                    }`}>
+                    <div className={getDropdownTriggerStyles(isDestinationActive)}>
                       <Plane className="h-4 w-4 transition-transform duration-500 group-hover:rotate-12" />
                       Destinations
                       <ChevronDown className={`h-4 w-4 transition-all duration-300 ${isHoveringDestinations ? "rotate-180 scale-110" : ""}`} />
-                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${
-                        isDestinationActive ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
-                      }`} />
+                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isDestinationActive ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                        }`} />
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="center"
                     sideOffset={8}
-                    className="w-56 p-2 border-white/20 bg-white/95 backdrop-blur-xl shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300"
+                    className="w-56 p-2 border-border bg-background/95 backdrop-blur-xl shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300"
                     onMouseEnter={() => setIsHoveringDestinations(true)}
                     onMouseLeave={() => setIsHoveringDestinations(false)}
                   >
@@ -161,9 +213,8 @@ export function Navbar() {
                       <DropdownMenuItem key={dest.path} asChild className="focus:bg-transparent focus:text-inherit p-0">
                         <Link
                           to={dest.path}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group ${
-                            isActive(dest.path) ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-primary/5"
-                          } ${dest.color}`}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group ${isActive(dest.path) ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5"
+                            } ${dest.color}`}
                         >
                           <span className="text-xl transition-transform duration-300 group-hover:scale-125">{dest.flag}</span>
                           <span className="font-medium flex-grow transition-all duration-300 group-hover:translate-x-1">{dest.name}</span>
@@ -183,20 +234,17 @@ export function Navbar() {
               >
                 <DropdownMenu open={isHoveringAboutUs} onOpenChange={setIsHoveringAboutUs}>
                   <DropdownMenuTrigger className="outline-none">
-                    <div className={`flex items-center gap-1 px-2 py-1 text-sm font-medium transition-all duration-300 group ${
-                      isAboutUsActive ? "text-primary font-semibold" : "text-foreground/80 hover:text-primary"
-                    }`}>
+                    <div className={getDropdownTriggerStyles(isAboutUsActive)}>
                       About Us
                       <ChevronDown className={`h-4 w-4 transition-all duration-300 ${isHoveringAboutUs ? "rotate-180 scale-110" : ""}`} />
-                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${
-                        isAboutUsActive ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
-                      }`} />
+                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isAboutUsActive ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                        }`} />
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="center"
                     sideOffset={8}
-                    className="w-48 p-2 border-white/20 bg-white/95 backdrop-blur-xl shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300"
+                    className="w-48 p-2 border-border bg-background/95 backdrop-blur-xl shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300"
                     onMouseEnter={() => setIsHoveringAboutUs(true)}
                     onMouseLeave={() => setIsHoveringAboutUs(false)}
                   >
@@ -204,9 +252,8 @@ export function Navbar() {
                       <DropdownMenuItem key={item.path} asChild className="focus:bg-transparent focus:text-inherit p-0">
                         <Link
                           to={item.path}
-                          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300 group ${
-                            isActive(item.path) ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-primary/5"
-                          }`}
+                          className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300 group ${isActive(item.path) ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5"
+                            }`}
                         >
                           <span className="font-medium flex-grow transition-all duration-300 group-hover:translate-x-1">{item.name}</span>
                           {isActive(item.path) && <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />}
@@ -219,16 +266,13 @@ export function Navbar() {
 
               {/* Contact Us */}
               <Link to="/contact" className="relative group">
-                <div className={`px-2 py-1 text-sm font-medium transition-all duration-300 ${
-                  isActive("/contact") ? "text-primary font-semibold" : "text-foreground/80 hover:text-primary"
-                }`}>
+                <div className={getLinkStyles(isActive("/contact"))}>
                   Contact Us
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${
-                    isActive("/contact") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
-                  }`} />
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/contact") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                    }`} />
                 </div>
                 {isActive("/contact") && (
-                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-accent rounded-full" />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
                 )}
               </Link>
 
@@ -241,21 +285,24 @@ export function Navbar() {
             <div className="hidden lg:flex items-center">
               <Button
                 asChild
-                className="relative overflow-hidden group bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105"
+                className={`relative overflow-hidden group transition-all duration-500 hover:scale-105 font-semibold ${hasBackground
+                  ? "bg-primary-foreground hover:bg-primary-foreground/90 text-primary"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
               >
                 <a href="tel:+1234567890" className="flex items-center gap-2">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-current/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                   <Phone className="h-4 w-4" />
-                  <span className="font-semibold">Call Now</span>
+                  <span>Call Now</span>
                 </a>
               </Button>
             </div>
 
             {/* Mobile Toggle */}
             <button
-              className="lg:hidden p-2.5 rounded-lg hover:bg-primary/5 transition-all duration-300 active:scale-95 relative z-50"
+              className="lg:hidden p-2.5 rounded-lg transition-all duration-300 active:scale-95 relative z-50 hover:bg-black/5 dark:hover:bg-white/5"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
+              style={{ color: getTextColor() }}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -264,27 +311,29 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 z-40 ${
-            isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-          }`}
+          className={`lg:hidden fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 z-40 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+            }`}
           onClick={() => setIsOpen(false)}
           style={{ top: "80px" }}
         />
 
+        {/* Mobile Menu Content */}
         <div
-          className={`lg:hidden fixed left-0 right-0 z-40 transition-all duration-500 ease-in-out ${
-            isOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
-          }`}
-          style={{ top: "80px", maxHeight: "calc(100vh - 80px)", overflowY: "auto" }}
+          className={`lg:hidden fixed left-0 right-0 z-40 transition-all duration-500 ease-in-out ${isOpen ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0 pointer-events-none"
+            }`}
+          style={{
+            top: "80px",
+            maxHeight: "calc(100vh - 80px)",
+            overflowY: "auto",
+          }}
         >
-          <div className="bg-white/95 backdrop-blur-xl border-t border-white/20 shadow-2xl">
+          <div className="bg-background border-t border-border shadow-2xl">
             <div className="flex flex-col gap-1 p-4">
               <Link
                 to="/"
                 onClick={() => setIsOpen(false)}
-                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  isActive("/") ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-primary/5 hover:text-primary"
-                }`}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${isActive("/") ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5 hover:text-primary"
+                  }`}
               >
                 Home
               </Link>
@@ -292,16 +341,15 @@ export function Navbar() {
               <Link
                 to="/packages"
                 onClick={() => setIsOpen(false)}
-                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  isActive("/packages") ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-primary/5 hover:text-primary"
-                }`}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${isActive("/packages") ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5 hover:text-primary"
+                  }`}
               >
                 Packages
               </Link>
 
               {/* Mobile Destinations */}
               <div className="px-4 py-3">
-                <div className="text-sm font-semibold text-foreground/80 mb-2 flex items-center gap-2">
+                <div className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                   <Plane className="h-4 w-4" /> Destinations
                 </div>
                 <div className="grid grid-cols-2 gap-2 pl-2">
@@ -310,9 +358,8 @@ export function Navbar() {
                       key={dest.path}
                       to={dest.path}
                       onClick={() => setIsOpen(false)}
-                      className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 ${
-                        isActive(dest.path) ? "bg-primary/10 text-primary" : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
-                      } ${dest.color}`}
+                      className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 ${isActive(dest.path) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                        } ${dest.color}`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{dest.flag}</span>
@@ -325,16 +372,15 @@ export function Navbar() {
 
               {/* Mobile About Us */}
               <div className="px-4 py-3">
-                <div className="text-sm font-semibold text-foreground/80 mb-2">About Us</div>
+                <div className="text-sm font-semibold text-foreground mb-2">About Us</div>
                 <div className="flex flex-col gap-1 pl-2">
                   {aboutUsItems.map((item) => (
                     <Link
                       key={item.path}
                       to={item.path}
                       onClick={() => setIsOpen(false)}
-                      className={`px-4 py-2.5 rounded-lg text-sm transition-all duration-300 ${
-                        isActive(item.path) ? "bg-primary/10 text-primary" : "text-foreground/70 hover:bg-primary/5 hover:text-primary"
-                      }`}
+                      className={`px-4 py-2.5 rounded-lg text-sm transition-all duration-300 ${isActive(item.path) ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                        }`}
                     >
                       {item.name}
                     </Link>
@@ -345,15 +391,14 @@ export function Navbar() {
               <Link
                 to="/contact"
                 onClick={() => setIsOpen(false)}
-                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  isActive("/contact") ? "bg-primary/10 text-primary" : "text-foreground/80 hover:bg-primary/5 hover:text-primary"
-                }`}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${isActive("/contact") ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5 hover:text-primary"
+                  }`}
               >
                 Contact Us
               </Link>
 
-      <div className="px-4 py-3 border-t border-border/50">
-                <div className="text-sm font-semibold text-foreground/80 mb-2">
+              <div className="px-4 py-3 border-t border-border">
+                <div className="text-sm font-semibold text-foreground mb-2">
                   Currency
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -368,12 +413,12 @@ export function Navbar() {
                     <button
                       key={currency.code}
                       onClick={() => {
-                        setCurrency(currency.code); // Use currency service setter
+                        setCurrency(currency.code);
                         setIsOpen(false);
                       }}
                       className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center gap-2 ${currentCurrency === currency.code
                         ? 'bg-primary/10 text-primary'
-                        : 'text-foreground/70 hover:bg-primary/5'
+                        : 'text-muted-foreground hover:bg-primary/5'
                         }`}
                     >
                       <span className="text-lg">{currency.flag}</span>
