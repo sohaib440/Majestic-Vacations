@@ -50,7 +50,15 @@ const releaseTourSeats = async (tourId, seatsToRelease) => {
 };
 
 // Helper: Parse boolean from query
-const parseBool = (value) => value === 'true';
+const parseBool = (value) => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'boolean') return value; // Handle boolean
+  if (typeof value === 'string') {
+    if (value.toLowerCase() === 'true') return true;
+    if (value.toLowerCase() === 'false') return false;
+  }
+  return Boolean(value); // Fallback
+};
 
 // Helper: Parse number from query
 const parseNumber = (value) => parseFloat(value) || undefined;

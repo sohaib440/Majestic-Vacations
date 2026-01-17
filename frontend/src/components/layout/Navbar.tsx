@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.webp";
 import CurrencySelector from '@/components/shared/currency/CurrencySelector';
+import { useCurrency } from '@/hooks/useCurrency';
+
 
 const destinations = [
   { name: "Dubai", path: "/destinations/dubai", flag: "🇦🇪", color: "hover:text-[#CE1126]" },
@@ -35,7 +37,8 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHoveringDestinations, setIsHoveringDestinations] = useState(false);
   const [isHoveringAboutUs, setIsHoveringAboutUs] = useState(false);
-  const [currentCurrency, setCurrentCurrency] = useState("USD");
+  // const [currentCurrency, setCurrentCurrency] = useState("USD");
+  const { currentCurrency, setCurrency } = useCurrency();
   const location = useLocation();
   const navRef = useRef<HTMLElement>(null);
 
@@ -349,7 +352,7 @@ export function Navbar() {
                 Contact Us
               </Link>
 
-              <div className="px-4 py-3 border-t border-border/50">
+      <div className="px-4 py-3 border-t border-border/50">
                 <div className="text-sm font-semibold text-foreground/80 mb-2">
                   Currency
                 </div>
@@ -365,12 +368,12 @@ export function Navbar() {
                     <button
                       key={currency.code}
                       onClick={() => {
-                        setCurrentCurrency(currency.code);
+                        setCurrency(currency.code); // Use currency service setter
                         setIsOpen(false);
                       }}
                       className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center gap-2 ${currentCurrency === currency.code
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-foreground/70 hover:bg-primary/5'
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-foreground/70 hover:bg-primary/5'
                         }`}
                     >
                       <span className="text-lg">{currency.flag}</span>

@@ -98,7 +98,7 @@ const TourForm: React.FC<TourFormProps> = ({
       originalPrice: initialData?.originalPrice,
       rating: initialData?.rating || 4.8,
       highlights: initialData?.highlights || [],
-      featured: initialData?.featured || false,
+      featured: initialData?.featured !== undefined ? initialData.featured : false, // Explicit check
       isActive: initialData?.isActive ?? true,
       isDeleted: initialData?.isDeleted || false, 
     },
@@ -239,6 +239,7 @@ const TourForm: React.FC<TourFormProps> = ({
   };
 
   const handleSubmit = (data: TourFormValues) => {
+    console.log('Form data before submit:', data);
     if (mode === 'create' && imageFiles.length === 0) {
       toast({
         title: 'Images Required',
@@ -271,6 +272,28 @@ const TourForm: React.FC<TourFormProps> = ({
       highlightMediaPreviews.forEach(url => URL.revokeObjectURL(url));
     };
   }, [imagePreviews, highlightMediaPreviews]);
+
+  // Sync form with initialData when it changes
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        title: initialData.title || '',
+        destination: initialData.destination || '',
+        country: initialData.country || 'Dubai',
+        startDate: initialData.startDate || '',
+        duration: initialData.duration || '',
+        groupSize: initialData.groupSize || 1,
+        price: initialData.price || 0,
+        pricePerMonth: initialData.pricePerMonth || 0,
+        originalPrice: initialData.originalPrice,
+        rating: initialData.rating || 4.8,
+        highlights: initialData.highlights || [],
+        featured: initialData.featured !== undefined ? initialData.featured : false, // Explicit
+        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
+        isDeleted: initialData.isDeleted || false,
+      });
+    }
+  }, [initialData, form]);
 
   return (
     <Form {...form}>
