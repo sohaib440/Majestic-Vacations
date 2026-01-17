@@ -35,6 +35,7 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHoveringDestinations, setIsHoveringDestinations] = useState(false);
   const [isHoveringAboutUs, setIsHoveringAboutUs] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState("USD");
   const location = useLocation();
   const navRef = useRef<HTMLElement>(null);
 
@@ -364,8 +365,7 @@ export function Navbar() {
                     <button
                       key={currency.code}
                       onClick={() => {
-                        // You'll need to add setCurrency to your mobile menu logic
-                        // Or use a context/state management solution
+                        setCurrentCurrency(currency.code);
                         setIsOpen(false);
                       }}
                       className={`px-3 py-2.5 rounded-lg text-sm transition-all duration-300 flex items-center gap-2 ${currentCurrency === currency.code
