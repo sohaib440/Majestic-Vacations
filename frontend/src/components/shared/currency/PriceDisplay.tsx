@@ -1,3 +1,4 @@
+// src/components/shared/currency/PriceDisplay.tsx
 import React from 'react';
 import { useCurrency } from '@/hooks/useCurrency';
 

@@ -1,3 +1,4 @@
+// src/hooks/useCurrency.ts
 import { useState, useEffect, useCallback } from 'react';
 import { currencyService } from '@/services/currencyService';
 import { CURRENCIES } from '@/lib/currency';

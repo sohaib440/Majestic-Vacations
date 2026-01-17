@@ -13,6 +13,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { TourPackage } from '@/types/tour-package';
 import { formatPrice } from '@/lib/tour-utils';
+import { CurrencyPrice } from './currency/CurrencyPrice';
 
 export interface PackageCardProps {
    tour: TourPackage;
@@ -154,10 +155,10 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
                            className={`h-1.5 rounded-full ${tour.availableSeats === 0
-                                 ? 'bg-red-500'
-                                 : tour.availableSeats <= 3
-                                    ? 'bg-yellow-500'
-                                    : 'bg-green-500'
+                              ? 'bg-red-500'
+                              : tour.availableSeats <= 3
+                                 ? 'bg-yellow-500'
+                                 : 'bg-green-500'
                               }`}
                            style={{
                               width: `${Math.min(100, (tour.bookedSeats / tour.groupSize) * 100)}%`
@@ -178,20 +179,23 @@ const PackageCard: React.FC<PackageCardProps> = ({
                   </ul>
                )}
             </CardContent>
-
+            
             <CardFooter className="p-5 pt-0 flex items-end justify-between">
                <div>
                   {tour.originalPrice && tour.originalPrice > tour.price && (
                      <p className="text-sm text-muted-foreground line-through">
-                        {formatPrice(tour.originalPrice)}
+                        <CurrencyPrice
+                           amount={tour.originalPrice}
+                           variant="compact"
+                           showSymbol={false}
+                        />
                      </p>
                   )}
-                  <div className="flex items-baseline gap-1">
-                     <span className="text-2xl font-serif font-bold text-primary">
-                        {formatPrice(tour.price)}
-                     </span>
-                     <span className="text-sm font-normal text-muted-foreground">/person</span>
-                  </div>
+                  <CurrencyPrice
+                     amount={tour.price}
+                     variant="compact"
+                     className="text-primary"
+                  />
                </div>
                <Button
                   onClick={handleBooking}

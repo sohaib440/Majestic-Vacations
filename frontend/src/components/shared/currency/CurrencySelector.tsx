@@ -1,3 +1,4 @@
+// src/components/shared/currency/CurrencySelector.tsx
 import React, { useState } from 'react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';

@@ -36,7 +36,9 @@ import {
    AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { CurrencyPrice } from './currency/CurrencyPrice'; 
 const baseUrl = import.meta.env.VITE_API_URL
+
 // import { useAuth } from '@/contexts/AuthContext';
 
 interface TourDetailPageProps {
@@ -389,24 +391,32 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                            <span className="text-sm text-muted-foreground">
                               {!isAdmin  ? "Price per person" : "Current Price"}
                            </span>
-                           <div className={`text-2xl font-bold ${!isAdmin  ? "text-primary" : "text-green-600"}`}>
-                              {formatPrice(tour.price)}
-                           </div>
+                           <CurrencyPrice
+                              amount={tour.price}
+                              variant="detail"
+                              className={!isAdmin ? "text-primary" : "text-green-600"}
+                           />
                         </div>
 
                         {tour.originalPrice && tour.originalPrice > tour.price && (
                            <>
                               <div className="flex items-center justify-between">
                                  <span className="text-sm text-muted-foreground">Original Price</span>
-                                 <div className="text-lg line-through text-gray-500">
-                                    {formatPrice(tour.originalPrice)}
-                                 </div>
+                                 <CurrencyPrice
+                                    amount={tour.originalPrice}
+                                    variant="compact"
+                                    className="text-lg line-through text-gray-500"
+                                 />
                               </div>
 
                               <div className="flex items-center justify-between">
                                  <span className="text-sm text-muted-foreground">You Save</span>
                                  <div className="text-lg font-semibold text-red-600">
-                                    {formatPrice(tour.originalPrice - tour.price)}
+                                    <CurrencyPrice
+                                       amount={tour.originalPrice - tour.price}
+                                       variant="compact"
+                                       showSymbol={false}
+                                    />
                                     <span className="text-sm ml-1">({discountPercentage}%)</span>
                                  </div>
                               </div>

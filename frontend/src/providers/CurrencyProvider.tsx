@@ -1,3 +1,4 @@
+// src/providers/CurrencyProvider.tsx
 import React, { useEffect } from 'react';
 import { currencyService } from '@/services/currencyService';
 
