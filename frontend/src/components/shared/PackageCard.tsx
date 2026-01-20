@@ -39,7 +39,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
       ? `${baseUrl}/${tour.images[0]}`
       : '/placeholder.svg';
 
-   const formattedDate = tour.startDate;
+   const formattedStartDate = new Date(tour.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+   const formattedEndDate = new Date(tour.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+   const formattedDateRange = `${formattedStartDate} - ${formattedEndDate}`;
 
    const handleBooking = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -128,7 +130,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                      <Calendar className="h-3 w-3 mr-1" />
-                     {formattedDate}
+                     {formattedDateRange}
                   </Badge>
                </div>
 

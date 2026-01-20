@@ -6,6 +6,7 @@ export interface TourPackage {
   destination: string;
   country: 'Dubai' | 'Greece' | 'Indonesia' | 'Turkey' | 'Thailand';
   startDate: string;  
+  endDate: string;
   images: string[];  
   duration: string;
   groupSize: number;
@@ -48,6 +49,7 @@ export interface CreateTourPackageDto {
   destination: string;
   country: 'Dubai' | 'Greece' | 'Indonesia' | 'Turkey' | 'Thailand';
   startDate: string;
+  endDate: string;
   duration: string;
   groupSize: number;
   price: number;

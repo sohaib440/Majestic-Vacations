@@ -275,6 +275,7 @@ const createTour = async (req, res) => {
     const newTourData = {
       ...tourData,
       startDate: tourData.startDate,
+      endDate: tourData.endDate,
       images,
       groupSize: parseInt(tourData.groupSize) || 1,
       pricePerMonth: parseFloat(tourData.pricePerMonth) || 0,

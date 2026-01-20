@@ -26,6 +26,11 @@ const tourSchema = new mongoose.Schema(
       required: [true, 'A tour must have a start date'],
       trim: true,
     },
+    endDate: {
+      type: String,
+      required: [true, 'A tour must have an end date'],
+      trim: true,
+    },
     images: {
       type: [String],
       required: [true, 'A tour must have at least one image'],

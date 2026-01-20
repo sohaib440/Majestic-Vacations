@@ -34,7 +34,7 @@ const DestinationPackagesSection: React.FC<DestinationPackagesSectionProps> = ({
                limit={limit}
                variant={variant}
                gridCols={{ sm: 1, md: 2, lg: 3 }}
-               emptyMessage={`No packages available for ${country} at the moment.`}
+               emptyMessage={`Contact us to book your exclusive trip to ${country}...`}
                isAdmin={false} 
                filters={{
                   isDeleted: false,

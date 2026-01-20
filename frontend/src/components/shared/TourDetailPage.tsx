@@ -304,6 +304,18 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
+                           <Calendar className="h-4 w-4 text-red-500" />
+                           <span className="text-sm">Dates</span>
+                        </div>
+                        <span className="font-medium">
+                           {new Date(tour.startDate).toLocaleDateString()} - {new Date(tour.endDate).toLocaleDateString()}
+                        </span>
+                     </div>
+
+                     <Separator />
+
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                            <Users className="h-4 w-4 text-green-500" />
                            <span className="text-sm">Group Size</span>
                         </div>

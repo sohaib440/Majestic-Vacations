@@ -38,6 +38,7 @@ const tourSchema = z.object({
   destination: z.string().min(3),
   country: z.enum(['Dubai', 'Greece', 'Indonesia', 'Turkey', 'Thailand']),
   startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().min(1, 'End date is required'),
   duration: z.string().min(1),
   groupSize: z.number().min(1),
   price: z.number().min(0),
@@ -91,6 +92,7 @@ const TourForm: React.FC<TourFormProps> = ({
       destination: initialData?.destination || '',
       country: (initialData?.country as 'Dubai') || 'Dubai',
       startDate: initialData?.startDate || '', // Changed from date
+      endDate: initialData?.endDate || '',
       duration: initialData?.duration || '',
       groupSize: initialData?.groupSize || 1,
       price: initialData?.price || 0,
@@ -281,6 +283,7 @@ const TourForm: React.FC<TourFormProps> = ({
         destination: initialData.destination || '',
         country: initialData.country || 'Dubai',
         startDate: initialData.startDate || '',
+        endDate: initialData.endDate || '',
         duration: initialData.duration || '',
         groupSize: initialData.groupSize || 1,
         price: initialData.price || 0,
@@ -351,6 +354,15 @@ const TourForm: React.FC<TourFormProps> = ({
                   <FormLabel>Start Date *</FormLabel>
                   <FormControl><Input type="date" {...field} /></FormControl>
                   <FormDescription>When does this tour start?</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="endDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Date *</FormLabel>
+                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormDescription>When does this tour end?</FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />

@@ -27,106 +27,49 @@ const aboutUsItems = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [isHoveringDestinations, setIsHoveringDestinations] = useState(false);
-  const [isHoveringAboutUs, setIsHoveringAboutUs] = useState(false);
-  const { currentCurrency, setCurrency } = useCurrency();
-  const location = useLocation();
-  const navRef = useRef<HTMLElement>(null);
-
-  const isActive = (path: string) => location.pathname === path;
-  const isDestinationActive = destinations.some((d) => location.pathname === d.path);
-  const isAboutUsActive = aboutUsItems.some((item) => location.pathname === item.path);
-
-  // Close mobile menu on route change
-  useEffect(() => setIsOpen(false), [location.pathname]);
-
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => { document.body.style.overflow = "unset"; };
-  }, [isOpen]);
-
-  // Scroll effect for navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const threshold = windowHeight * 0.5; // 50vh
-
-      // Calculate progress from 0 to 1
-      const progress = Math.min(scrollY / threshold, 1);
-      setScrollProgress(progress);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Initial call
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Calculate background color based on scroll progress
-  const getBackgroundColor = () => {
-    if (scrollProgress === 0) {
-      return "transparent"; // Fully transparent at top
-    }
-
-    // Calculate opacity from 0 to 0.95 based on scroll progress
-    const opacity = scrollProgress * 0.95;
-
-    // Return primary color with calculated opacity
-    return `hsl(var(--primary) / ${opacity})`;
-  };
-
-  // Calculate text color based on scroll progress
-  const getTextColor = () => {
-    if (scrollProgress === 0) {
-      return "hsl(var(--foreground))"; // Dark text at top for light background
-    }
-
-    // When we have any background color, use white text
-    return "hsl(var(--primary-foreground))"; // White text
-  };
-
-  // Determine if navbar has background (for border/box-shadow)
-  const hasBackground = scrollProgress > 0;
-
+      const [isHoveringDestinations, setIsHoveringDestinations] = useState(false);
+      const [isHoveringAboutUs, setIsHoveringAboutUs] = useState(false);
+      const { currentCurrency, setCurrency } = useCurrency();
+      const location = useLocation();
+      const navRef = useRef<HTMLElement>(null);
+    
+      const isActive = (path: string) => location.pathname === path;
+      const isDestinationActive = destinations.some((d) => location.pathname === d.path);
+      const isAboutUsActive = aboutUsItems.some((item) => location.pathname === item.path);
+    
+      // Close mobile menu on route change
+      useEffect(() => setIsOpen(false), [location.pathname]);
+    
+      // Close mobile menu when clicking outside
+      useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (navRef.current && !navRef.current.contains(event.target as Node)) {
+            setIsOpen(false);
+          }
+        };
+        if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, [isOpen]);
+    
+      // Prevent body scroll when mobile menu is open
+      useEffect(() => {
+        if (isOpen) {
+          document.body.style.overflow = "hidden";
+        } else {
+          document.body.style.overflow = "unset";
+        }
+        return () => { document.body.style.overflow = "unset"; };
+      }, [isOpen]);
   // Helper function for link styles
   const getLinkStyles = (isActiveLink: boolean) => {
     const baseStyles = "px-2 py-1 text-sm font-medium transition-all duration-300";
-
-    if (hasBackground) {
-      // When scrolled - white text
-      return `${baseStyles} ${isActiveLink ? "text-primary-foreground font-semibold" : "text-primary-foreground/90 hover:text-primary-foreground"}`;
-    } else {
-      // When at top - dark text
-      return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
-    }
+    return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
   };
 
   // Helper function for dropdown trigger styles
   const getDropdownTriggerStyles = (isActiveLink: boolean) => {
     const baseStyles = "flex items-center gap-1 px-2 py-1 text-sm font-medium transition-all duration-300 group";
-
-    if (hasBackground) {
-      return `${baseStyles} ${isActiveLink ? "text-primary-foreground font-semibold" : "text-primary-foreground/90 hover:text-primary-foreground"}`;
-    } else {
-      return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
-    }
+    return `${baseStyles} ${isActiveLink ? "text-primary font-semibold" : "text-foreground/90 hover:text-primary"}`;
   };
 
   return (
@@ -136,11 +79,10 @@ export function Navbar() {
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out"
         style={{
           height: "80px",
-          backgroundColor: getBackgroundColor(),
-          color: getTextColor(),
-          backdropFilter: hasBackground ? "blur(10px)" : "none",
-          boxShadow: hasBackground ? "0 4px 20px rgba(0, 0, 0, 0.15)" : "none",
-          borderBottom: hasBackground ? "1px solid hsl(var(--border))" : "none",
+          backgroundColor: "transparent",
+          backdropFilter: "blur(16px)",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+          borderBottom: "1px solid hsl(var(--border) / 0.1)",
         }}
       >
         <div className="container mx-auto px-4 lg:px-8 h-full">
@@ -153,8 +95,7 @@ export function Navbar() {
                 className="h-12 w-auto transition-all duration-500 group-hover:scale-105 group-hover:rotate-2"
               />
               <span
-                className="hidden lg:inline text-xl font-serif font-semibold"
-                style={{ color: getTextColor() }}
+                className="hidden lg:inline text-xl font-serif font-semibold text-foreground"
               >
                 Majestic Vacations
               </span>
@@ -166,11 +107,11 @@ export function Navbar() {
               <Link to="/" className="relative group">
                 <div className={getLinkStyles(isActive("/"))}>
                   Home
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
                     }`} />
                 </div>
                 {isActive("/") && (
-                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full`} />
                 )}
               </Link>
 
@@ -178,11 +119,11 @@ export function Navbar() {
               <Link to="/packages" className="relative group">
                 <div className={getLinkStyles(isActive("/packages"))}>
                   Packages
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/packages") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/packages") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
                     }`} />
                 </div>
                 {isActive("/packages") && (
-                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full`} />
                 )}
               </Link>
 
@@ -198,7 +139,7 @@ export function Navbar() {
                       <Plane className="h-4 w-4 transition-transform duration-500 group-hover:rotate-12" />
                       Destinations
                       <ChevronDown className={`h-4 w-4 transition-all duration-300 ${isHoveringDestinations ? "rotate-180 scale-110" : ""}`} />
-                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isDestinationActive ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isDestinationActive ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
                         }`} />
                     </div>
                   </DropdownMenuTrigger>
@@ -237,7 +178,7 @@ export function Navbar() {
                     <div className={getDropdownTriggerStyles(isAboutUsActive)}>
                       About Us
                       <ChevronDown className={`h-4 w-4 transition-all duration-300 ${isHoveringAboutUs ? "rotate-180 scale-110" : ""}`} />
-                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isAboutUsActive ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                      <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isAboutUsActive ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
                         }`} />
                     </div>
                   </DropdownMenuTrigger>
@@ -268,11 +209,11 @@ export function Navbar() {
               <Link to="/contact" className="relative group">
                 <div className={getLinkStyles(isActive("/contact"))}>
                   Contact Us
-                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/contact") ? (hasBackground ? "bg-primary-foreground/20" : "bg-primary/10") + " scale-105" : "group-hover:" + (hasBackground ? "bg-primary-foreground/10" : "bg-primary/5") + " group-hover:scale-105"
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/contact") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
                     }`} />
                 </div>
                 {isActive("/contact") && (
-                  <div className={`absolute bottom-0 left-0 w-full h-0.5 ${hasBackground ? "bg-primary-foreground" : "bg-primary"} rounded-full`} />
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full`} />
                 )}
               </Link>
 
@@ -285,9 +226,7 @@ export function Navbar() {
             <div className="hidden lg:flex items-center">
               <Button
                 asChild
-                className={`relative overflow-hidden group transition-all duration-500 hover:scale-105 font-semibold ${hasBackground
-                  ? "bg-primary-foreground hover:bg-primary-foreground/90 text-primary"
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground"}`}
+                className={`relative overflow-hidden group transition-all duration-500 hover:scale-105 font-semibold bg-primary hover:bg-primary/90 text-primary-foreground`}
               >
                 <a href="tel:+1234567890" className="flex items-center gap-2">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-current/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -299,10 +238,9 @@ export function Navbar() {
 
             {/* Mobile Toggle */}
             <button
-              className="lg:hidden p-2.5 rounded-lg transition-all duration-300 active:scale-95 relative z-50 hover:bg-black/5 dark:hover:bg-white/5"
+              className="lg:hidden p-2.5 rounded-lg transition-all duration-300 active:scale-95 relative z-50 hover:bg-black/5 dark:hover:bg-white/5 text-foreground"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
-              style={{ color: getTextColor() }}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
