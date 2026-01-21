@@ -39,7 +39,7 @@ export default function About() {
     <Layout>
       {/* Hero Section with Background Image */}
       <section
-        className="relative py-24 bg-cover bg-center bg-no-repeat"
+        className="relative py-36 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `linear-gradient(rgba(10, 0, 10, 0.6), rgba(0, 0, 0, 0.6)), url(${AboutBackground})`,
         }}

@@ -44,6 +44,9 @@ export function Footer() {
               Creating unforgettable travel experiences since 2010. Let us take you on a journey
               to the world's most beautiful destinations.
             </p>
+            <p className="text-primary-foreground/80 text-sm leading-relaxed">
+              Payment Options, we accept (Paypal, Mastercard, Visa Card, Affirm and Discover)
+            </p>
             <div className="flex gap-4">
               <a href="#" className="hover:text-accent transition-colors" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />

@@ -108,7 +108,7 @@ export default function Dubai() {
     <AnimatedDestinationPage>
       <Layout>
         {/* Hero Section with Video Background */}
-        <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
+        <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0">
             <video
               autoPlay

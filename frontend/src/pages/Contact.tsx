@@ -39,14 +39,14 @@ const contactInfo = [
   },
 ];
 
-const backgroundUrl = 'https://plus.unsplash.com/premium_photo-1667516592210-856380f68ab0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D';
+const backgroundUrl = 'https://static.vecteezy.com/system/resources/thumbnails/021/698/967/small/man-pointing-at-a-wooden-block-communication-concept-with-email-message-box-and-contacts-icons-website-page-contact-connection-with-modern-network-technology-borderless-communication-contact-us-free-photo.jpg';
 
 export default function Contact() {
   return (
     <Layout>
       {/* Hero Section with Background Image */}
       <section
-        className="relative py-32 md:py-40 bg-cover bg-center bg-no-repeat"
+        className="relative py-44 md:py-40 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url(${backgroundUrl})`,
           backgroundAttachment: 'fixed',
