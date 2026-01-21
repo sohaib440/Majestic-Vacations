@@ -86,26 +86,38 @@ export default function Contact() {
               Choose your preferred method to reach our travel experts
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {contactInfo.map((item, index) => (
-              <a
-                key={index}
-                href={item.href}
-                className="group bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-accent/30 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 transform text-center block"
-              >
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 text-accent mb-6 group-hover:scale-110 transition-transform duration-500">
-                  <item.icon className="h-8 w-8" />
-                </div>
-                <h3 className="font-semibold text-xl mb-2">{item.title}</h3>
-                <p className="text-foreground font-medium text-lg mb-2">{item.details}</p>
-                <p className="text-sm text-muted-foreground mb-4">{item.description}</p>
-                <span className="inline-flex items-center text-accent text-sm font-medium group-hover:gap-2 transition-all duration-300">
-                  {item.cta}
-                  <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </span>
-              </a>
-            ))}
-          </div>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+  {contactInfo.map((item, index) => (
+    <a
+      key={index}
+      href={item.href}
+      className="group bg-card/50 backdrop-blur-sm p-8 rounded-2xl border border-border/50 hover:border-accent/30 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 transform text-center block"
+    >
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 text-accent mb-6 group-hover:scale-110 transition-transform duration-500">
+        <item.icon className="h-8 w-8" />
+      </div>
+
+      <h3 className="font-semibold text-xl mb-2">
+        {item.title}
+      </h3>
+
+      {/* FIXED EMAIL OVERFLOW */}
+      <p className="text-foreground font-medium text-lg mb-2 break-all text-center px-2">
+        {item.details}
+      </p>
+
+      <p className="text-sm text-muted-foreground mb-4">
+        {item.description}
+      </p>
+
+      <span className="inline-flex items-center justify-center text-accent text-sm font-medium group-hover:gap-2 transition-all duration-300">
+        {item.cta}
+        <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </span>
+    </a>
+  ))}
+</div>
+
         </div>
       </section>
 
@@ -164,10 +176,10 @@ export default function Contact() {
                       <Phone className="mr-3 h-5 w-5" />
                       Emergency Travel Support
                     </Button>
-                    <Button variant="outline" className="w-full justify-start py-6 text-lg" size="lg">
+                    {/* <Button variant="outline" className="w-full justify-start py-6 text-lg" size="lg">
                       <MessageCircle className="mr-3 h-5 w-5" />
                       Live Chat Support
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
 

@@ -44,7 +44,7 @@ const greeceFoods = [
   {
     name: "Spanakopita",
     image:
-      "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80",
+      "https://as1.ftcdn.net/v2/jpg/15/70/80/00/1000_F_1570800030_lmcs9n26DZpkCxI2kVSQyunJ4fJ9vlqf.jpg",
   },
   {
     name: "Baklava",

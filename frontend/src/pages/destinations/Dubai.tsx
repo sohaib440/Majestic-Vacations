@@ -60,7 +60,7 @@ const dubaiFoods = [
   {
     name: "Arabic Dates",
     image:
-      "https://images.unsplash.com/photo-1607532941433-304659e8198a?w=800&q=80",
+      "https://plus.unsplash.com/premium_photo-1676208753932-6e8bc83a0b0d?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 

@@ -131,11 +131,11 @@ const Login: React.FC = () => {
                      </Button>
 
                      <div className="text-center text-sm text-gray-600">
-                        <p>
+                        {/* <p>
                            Demo credentials:{" "}
                            <span className="font-medium text-accent">umerkhayam1717@gmail.com</span> /{" "}
                            <span className="font-medium text-accent">umer@1234</span>
-                        </p>
+                        </p> */}
                         <p className="mt-2">
                            Or return to{" "}
                            <Link
