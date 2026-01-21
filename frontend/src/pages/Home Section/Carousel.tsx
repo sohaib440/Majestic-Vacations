@@ -11,8 +11,8 @@ const Carousel = () => {
 
   const cardsData = [
     {
-      title: "Dubai",
-      desc: "Experience the blend of modernity and tradition in Dubai, from towering skyscrapers to historic markets.",
+      title: "UAE",
+      desc: "Experience the blend of modernity and tradition in UAE, from towering skyscrapers to historic markets.",
       bg: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop",
       thumb: "https://images.unsplash.com/photo-1518684079-3c830dcef090?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/dubai",

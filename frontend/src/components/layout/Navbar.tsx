@@ -13,7 +13,7 @@ import CurrencySelector from '@/components/shared/currency/CurrencySelector';
 import { useCurrency } from '@/hooks/useCurrency';
 
 const destinations = [
-  { name: "Dubai", path: "/destinations/dubai", flag: "🇦🇪", color: "hover:text-[#CE1126]" },
+  { name: "UAE", path: "/destinations/dubai", flag: "🇦🇪", color: "hover:text-[#CE1126]" },
   { name: "Turkey", path: "/destinations/turkey", flag: "🇹🇷", color: "hover:text-[#E30A17]" },
   { name: "Greece", path: "/destinations/greece", flag: "🇬🇷", color: "hover:text-[#0D5EAF]" },
   { name: "Thailand", path: "/destinations/thailand", flag: "🇹🇭", color: "hover:text-[#ED1C24]" },
