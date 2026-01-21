@@ -5,24 +5,28 @@ export interface TourPackage {
   title: string;
   destination: string;
   country: 'Dubai' | 'Greece' | 'Indonesia' | 'Turkey' | 'Thailand';
-  startDate: string;  // Changed from 'date' to 'startDate'
-  images: string[];   // Changed from 'image' to 'images' (array)
+  startDate: string;  
+  endDate: string;
+  images: string[];  
   duration: string;
   groupSize: number;
   price: number;
-  pricePerMonth: number;  // Added: Monthly payment price
+  pricePerMonth: number;  
   originalPrice?: number;
   rating: number;
-  highlights: HighlightItem[];  // Changed from string[] to object array
+  highlights: HighlightItem[]; 
   featured: boolean;
   bookedSeats: number;
   availableSeats: number;
+  isActive: boolean;
+  isDeleted: boolean;
+  deletedAt?: string;
   seatInfo?: {
     totalSeats: number;
     bookedSeats: number;
     availableSeats: number;
   };
-  monthlyPaymentInfo?: {  // Added: Monthly payment calculation
+  monthlyPaymentInfo?: {
     totalPrice: number;
     monthlyPrice: number;
     monthsRequired: number;
@@ -45,10 +49,12 @@ export interface CreateTourPackageDto {
   destination: string;
   country: 'Dubai' | 'Greece' | 'Indonesia' | 'Turkey' | 'Thailand';
   startDate: string;
+  endDate: string;
   duration: string;
   groupSize: number;
   price: number;
-  pricePerMonth: number;  // Added
+  pricePerMonth: number; 
+  isActive?: boolean;
   originalPrice?: number;
   rating?: number;
   highlights?: HighlightItem[];
@@ -58,6 +64,7 @@ export interface CreateTourPackageDto {
 // DTO for updating a tour
 export interface UpdateTourPackageDto extends Partial<CreateTourPackageDto> {
   _id?: string;
+  isDeleted?: boolean;
 }
 
 // Filters used in the admin list page
@@ -74,6 +81,10 @@ export interface TourPackageFilters {
   maxPrice?: number;
   minMonthlyPrice?: number;
   maxMonthlyPrice?: number;
+  isActive?: boolean;
+  isDeleted?: boolean;
+  includeDeleted?: boolean;
+  showAll?: boolean;
 }
 
 // Generic API response for single tour

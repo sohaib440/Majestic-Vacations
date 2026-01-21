@@ -17,7 +17,7 @@ const PackagesPage: React.FC = () => {
     <Layout>
       <div className="min-h-screen">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 py-20">
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 py-32">
           <div className="container mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full mb-6">
               <Sparkles className="h-4 w-4" />
@@ -35,8 +35,9 @@ const PackagesPage: React.FC = () => {
 
         <div className="container mx-auto p-4">
           <PackagesGrid
-            // filters={filters} // Pass the filters here
-            // variant="featured"
+            filters={filters}
+            isAdmin={false} // ← ADD THIS
+            variant="featured"
             gridCols={{ sm: 1, md: 2, lg: 3 }}
             emptyMessage="No featured packages available at the moment"
           />

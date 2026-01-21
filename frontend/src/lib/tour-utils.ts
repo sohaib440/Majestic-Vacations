@@ -2,7 +2,68 @@
 import { TourPackage } from '@/types/tour-package';
 import { getImageUrl } from './image-utils';
 
-export const formatPrice = (price: number) => {
+// For client-side: use this version
+export const formatPrice = (price: number, currencyCode?: string): string => {
+   if (typeof window === 'undefined') {
+      // Server-side rendering fallback
+      return new Intl.NumberFormat('en-US', {
+         style: 'currency',
+         currency: 'USD',
+         minimumFractionDigits: 0,
+         maximumFractionDigits: 0,
+      }).format(price);
+   }
+
+   try {
+      // Use the currency service directly (it's already a singleton)
+      // We'll create a helper function to handle this
+      return formatPriceWithCurrency(price, currencyCode);
+   } catch (error) {
+      console.error('Error formatting price:', error);
+      return new Intl.NumberFormat('en-US', {
+         style: 'currency',
+         currency: 'USD',
+         minimumFractionDigits: 0,
+         maximumFractionDigits: 0,
+      }).format(price);
+   }
+};
+
+// Helper function that handles the async import
+const formatPriceWithCurrency = (price: number, currencyCode?: string): string => {
+   // Dynamic import to avoid server-side issues
+   import('@/services/currencyService')
+      .then(({ currencyService }) => {
+         if (currencyCode) {
+            return currencyService.format(price, currencyCode);
+         }
+
+         const currentCurrency = currencyService.getCurrentCurrency();
+         const convertedAmount = currencyService.convertFromUSD(price, currentCurrency);
+         return currencyService.format(convertedAmount, currentCurrency);
+      })
+      .catch(() => {
+         // Fallback to USD formatting
+         return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+         }).format(price);
+      });
+
+   // Return a temporary value while async operation completes
+   return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+   }).format(price);
+};
+
+// Alternative: Create a simpler formatPrice that doesn't use currency service
+// and let the CurrencyPrice component handle conversions
+export const formatPriceSimple = (price: number): string => {
    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

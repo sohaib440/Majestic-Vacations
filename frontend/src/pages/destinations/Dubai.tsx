@@ -108,7 +108,7 @@ export default function Dubai() {
     <AnimatedDestinationPage>
       <Layout>
         {/* Hero Section with Video Background */}
-        <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
+        <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0">
             <video
               autoPlay
@@ -127,7 +127,7 @@ export default function Dubai() {
           <div className="relative z-10 container mx-auto px-4 text-center text-primary-foreground">
             <p className="text-accent text-lg font-medium mb-4">🇦🇪 United Arab Emirates</p>
             <h1 className="hero-title font-serif text-4xl md:text-6xl font-bold mb-6">
-              Discover Dubai
+              Discover UAE
             </h1>
             <p className="hero-subtitle text-lg md:text-xl max-w-2xl mx-auto text-primary-foreground/90">
               Where Modern Luxury Meets Arabian Tradition
@@ -176,21 +176,21 @@ export default function Dubai() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <SectionHeading title="About Dubai" centered={false} />
+                <SectionHeading title="About UAE" centered={false} />
                 <div className="space-y-4 text-muted-foreground">
                   <p>
-                    Dubai is a city of superlatives, home to the world's tallest building, largest shopping mall,
+                    UAE is a city of superlatives, home to the world's tallest building, largest shopping mall,
                     and some of the most luxurious hotels on the planet. This glittering metropolis in the desert
                     has transformed itself from a small fishing village into a global hub for tourism, commerce, and innovation.
                   </p>
                   <p>
                     Whether you're seeking adventure in the golden dunes, luxury shopping experiences, world-class
-                    dining, or cultural discoveries in the historic Al Fahidi district, Dubai offers an unparalleled
+                    dining, or cultural discoveries in the historic Al Fahidi district, UAE offers an unparalleled
                     blend of traditional Arabian hospitality and futuristic ambition.
                   </p>
                   <p>
                     From the iconic Burj Khalifa piercing the clouds to the palm-shaped islands visible from space,
-                    Dubai is a destination that constantly amazes and inspires travelers from around the world.
+                    UAE is a destination that constantly amazes and inspires travelers from around the world.
                   </p>
                 </div>
               </div>
@@ -221,7 +221,7 @@ export default function Dubai() {
         <section className="py-20 bg-background overflow-hidden">
           <div className="container mx-auto px-4">
             <SectionHeading
-              title="Famous Foods in Dubai"
+              title="Famous Foods in UAE"
               subtitle="Experience the rich flavors of Emirati and Middle Eastern cuisine."
             />
 
@@ -250,9 +250,9 @@ export default function Dubai() {
 
         {/* Tour Packages */}
         <DestinationPackagesSection
-          country="Dubai"
-          title="Dubai Tour Packages"
-          subtitle="Choose from our carefully crafted packages for an unforgettable Dubai experience."
+          country="UAE"
+          title="UAE Tour Packages"
+          subtitle="Choose from our carefully crafted packages for an unforgettable UAE experience."
           variant="featured"
           limit={6}
           showOnlyFeatured={false}
@@ -263,7 +263,7 @@ export default function Dubai() {
           <div className="container mx-auto px-4">
             <SectionHeading
               title="Photo Gallery"
-              subtitle="Get a glimpse of the stunning experiences awaiting you in Dubai."
+              subtitle="Get a glimpse of the stunning experiences awaiting you in UAE."
             />
             <PhotoGallery images={galleryImages} />
           </div>
@@ -274,11 +274,11 @@ export default function Dubai() {
           <div className="container mx-auto px-4">
             <div className="max-w-2xl mx-auto">
               <SectionHeading
-                title="Inquire About Dubai"
-                subtitle="Interested in visiting Dubai? Fill out the form and our travel experts will contact you with a personalized itinerary."
+                title="Inquire About UAE"
+                subtitle="Interested in visiting UAE? Fill out the form and our travel experts will contact you with a personalized itinerary."
               />
               <div className="bg-card p-8 rounded-2xl border border-border shadow-lg">
-                <ContactForm preselectedDestination="dubai" />
+                <ContactForm preselectedDestination="uae" />
               </div>
             </div>
           </div>

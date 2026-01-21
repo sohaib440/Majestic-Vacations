@@ -33,6 +33,9 @@ import { useCheckTourAvailability, useGetToursForBooking, useCreateBooking } fro
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useSearchParams } from 'react-router-dom';
+import { CurrencyPrice } from '@/components/shared/currency/CurrencyPrice';
+import { useCurrency } from '@/hooks/useCurrency';
+
 
 const bookingFormSchema = z.object({
   tour: z.string().min(1, 'Please select a tour'),
@@ -71,7 +74,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const tourIdFromUrl = searchParams.get('tourId');
-
+  const { currentCurrency } = useCurrency();
   const [selectedTour, setSelectedTour] = useState<TourForBooking | null>(null);
   const [isLoadingTour, setIsLoadingTour] = useState(false);
 
@@ -100,7 +103,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           seatsBooked: 1,
           pricing: {
             totalAmount: 0,
-            currency: 'USD',
+            currency: currentCurrency,
             paymentPlan: 'full',
           },
           termsAccepted: false,
@@ -246,12 +249,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                           {selectedTour.destination}, {selectedTour.country}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p>Price per person: <strong>${selectedTour.price}</strong></p>
-                        {selectedTour.pricePerMonth && (
-                          <p>Monthly: <strong>${selectedTour.pricePerMonth}/month</strong></p>
-                        )}
-                      </div>
+                        <div className="text-right">
+                          <p>Price per person:
+                            <strong>
+                              <CurrencyPrice amount={selectedTour.price} variant="compact" showSymbol={false} />
+                            </strong>
+                          </p>
+                          {selectedTour.pricePerMonth && (
+                            <p>Monthly:
+                              <strong>
+                                <CurrencyPrice amount={selectedTour.pricePerMonth} variant="compact" showSymbol={false} />
+                                /month
+                              </strong>
+                            </p>
+                          )}
+                        </div>
                     </div>
                   </div>
                 )}
@@ -343,15 +355,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <div className="flex flex-wrap justify-between items-center gap-4">
                 <div>
                   <p className="text-xl font-bold">
-                    Total: ${calculateTotalAmount().toLocaleString()}
+                    Total: <CurrencyPrice amount={calculateTotalAmount()} variant="detail" />
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {seatsBooked} × ${selectedTour?.price || 0}
+                    {seatsBooked} × <CurrencyPrice amount={selectedTour?.price || 0} variant="compact" showSymbol={false} />
                   </p>
                 </div>
                 {selectedTour?.monthlyPaymentInfo && (
                   <Badge variant="secondary" className="text-base px-4 py-1">
-                    Monthly: ${selectedTour.monthlyPaymentInfo.monthlyPrice * seatsBooked}/month
+                    Monthly:
+                    <CurrencyPrice
+                      amount={selectedTour.monthlyPaymentInfo.monthlyPrice * seatsBooked}
+                      variant="compact"
+                      showSymbol={false}
+                    />
+                    /month
                   </Badge>
                 )}
               </div>
@@ -373,7 +391,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                         <div className="flex items-center space-x-3">
                           <RadioGroupItem value="full" id="full" />
                           <Label htmlFor="full" className="cursor-pointer font-medium">
-                            Pay in Full (${calculateTotalAmount().toLocaleString()})
+                            Pay in Full <CurrencyPrice amount={calculateTotalAmount()} variant="compact" />
                           </Label>
                         </div>
                       </div>

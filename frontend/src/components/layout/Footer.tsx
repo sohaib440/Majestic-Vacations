@@ -4,7 +4,7 @@ import { FaTiktok  } from "react-icons/fa";
 import logo from "@/assets/logo.webp";
 
 const destinations = [
-  { name: "Dubai", path: "/destinations/dubai" },
+  { name: "UAE", path: "/destinations/dubai" },
   { name: "Turkey", path: "/destinations/turkey" },
   { name: "Greece", path: "/destinations/greece" },
   { name: "Thailand", path: "/destinations/thailand" },

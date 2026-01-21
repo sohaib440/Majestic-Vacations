@@ -29,12 +29,17 @@ const DestinationPackagesSection: React.FC<DestinationPackagesSectionProps> = ({
             />
 
             <PackagesGrid
-               country={country} // Pass country instead of destination
-               featured={showOnlyFeatured ? true : undefined} // Pass undefined to show all
+               country={country} 
+               featured={showOnlyFeatured ? true : undefined} 
                limit={limit}
                variant={variant}
                gridCols={{ sm: 1, md: 2, lg: 3 }}
-               emptyMessage={`No packages available for ${country} at the moment.`}
+               emptyMessage={`Contact us to book your exclusive trip to ${country}...`}
+               isAdmin={false} 
+               filters={{
+                  isDeleted: false,
+                  isActive: true
+               }}
             />
          </div>
       </section>

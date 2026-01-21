@@ -24,9 +24,9 @@ const app = express();
    1️⃣ STRIPE WEBHOOK — MUST BE FIRST (RAW BODY)
 ========================================================= */
 app.use(
-  "/webhook",
-  bodyParser.raw({ type: "application/json" }),
-  stripeWebhookRouter
+   "/webhook",
+   bodyParser.raw({ type: "application/json" }),
+   stripeWebhookRouter
 );
 
 /* =========================================================
@@ -38,18 +38,18 @@ app.set("trust proxy", 1);
    3️⃣ SECURITY HEADERS
 ========================================================= */
 app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-  })
+   helmet({
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+   })
 );
 
 /* =========================================================
    4️⃣ CORS
 ========================================================= */
 const corsOptions = {
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-  optionsSuccessStatus: 200,
+   origin: process.env.FRONTEND_URL,
+   credentials: true,
+   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 
@@ -57,12 +57,12 @@ app.use(cors(corsOptions));
    5️⃣ RATE LIMITING
 ========================================================= */
 app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
+   rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 100,
+      standardHeaders: true,
+      legacyHeaders: false,
+   })
 );
 
 /* =========================================================
@@ -96,23 +96,23 @@ app.use("/api", indexRouter);
    1️⃣1️⃣ DATABASE CONNECTION
 ========================================================= */
 connectDatabase()
-  .then(() => {
-    console.log("✅ Database connected");
-    initializeAdmin();
-  })
-  .catch((err) => {
-    console.error("❌ Database connection failed:", err);
-  });
+   .then(() => {
+      console.log("✅ Database connected");
+      initializeAdmin();
+   })
+   .catch((err) => {
+      console.error("❌ Database connection failed:", err);
+   });
 
 /* =========================================================
    1️⃣2️⃣ GLOBAL ERROR HANDLER
 ========================================================= */
 app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    message: err.message || "Internal Server Error",
-  });
+   console.error("🔥 ERROR:", err.stack);
+   res.status(err.status || 500).json({
+      success: false,
+      message: err.message || "Internal Server Error",
+   });
 });
 
 /* =========================================================
@@ -120,5 +120,5 @@ app.use((err, req, res, next) => {
 ========================================================= */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+   console.log(`🚀 Server running on port ${PORT}`);
 });

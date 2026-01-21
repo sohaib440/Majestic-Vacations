@@ -20,7 +20,7 @@ interface ContactFormProps {
 }
 
 const destinations = [
-  { value: "dubai", label: "Dubai" },
+  { value: "uae", label: "UAE" },
   { value: "turkey", label: "Turkey" },
   { value: "greece", label: "Greece" },
   { value: "thailand", label: "Thailand" },

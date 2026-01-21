@@ -7,28 +7,30 @@ import { UpdateTourPackageDto } from '@/types/tour-package';
 import { toast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 const EditTourPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: tourResponse, isLoading, error } = useGetTourById(id || '');
+  // For admin edit page, include deleted tours
+  const { data: tourResponse, isLoading, error, isError } = useGetTourById(id || '', true);
   const updateTour = useUpdateTour();
 
   const tour = tourResponse?.data?.tour;
+  const apiError = tourResponse?.message;
 
   useEffect(() => {
-    if (error) {
+    if (isError || apiError) {
       toast({
         title: 'Error',
-        description: 'Failed to load tour package',
+        description: error?.message || apiError || 'Failed to load tour package',
         variant: 'destructive',
       });
-      navigate('/admin/packages');
     }
-  }, [error, navigate]);
+  }, [isError, apiError, error]);
 
-  // UPDATED: Match TourForm's onSubmit interface
   const handleSubmit = async ({
     tourData,
     images,
@@ -44,15 +46,15 @@ const EditTourPage: React.FC = () => {
       await updateTour.mutateAsync({
         id,
         tourData,
-        images: images, // Now passing array
-        highlightMedia: highlightMedia
+        images,
+        highlightMedia,
       });
 
       toast({
         title: 'Success',
         description: 'Tour package updated successfully',
       });
-      navigate(-1);
+      navigate('/admin/packages');
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -66,11 +68,36 @@ const EditTourPage: React.FC = () => {
     return <LoadingSpinner />;
   }
 
-  if (!tour) {
+  // Show error message if tour not found
+  if (apiError === 'Tour not found' || isError || !tour) {
     return (
-      <div className="text-center py-12">
-        <div className="text-gray-400 mb-4">Tour package not found</div>
-        <Button onClick={() => navigate('/admin/packages')}>Go Back</Button>
+      <div className="container mx-auto py-8 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Edit Tour Package</h1>
+            <p className="text-muted-foreground">Tour not found</p>
+          </div>
+          <Button variant="outline" onClick={() => navigate('/admin/packages')}>
+            Go Back
+          </Button>
+        </div>
+
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Tour Not Found</AlertTitle>
+          <AlertDescription>
+            The tour with ID "{id}" could not be found. It may have been deleted or the ID is incorrect.
+          </AlertDescription>
+        </Alert>
+
+        <div className="flex gap-4">
+          <Button onClick={() => navigate('/admin/packages')}>
+            View All Packages
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/admin/packages/create')}>
+            Create New Package
+          </Button>
+        </div>
       </div>
     );
   }
@@ -88,6 +115,17 @@ const EditTourPage: React.FC = () => {
           Cancel
         </Button>
       </div>
+
+      {tour.isDeleted && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>This tour is deleted</AlertTitle>
+          <AlertDescription>
+            This tour is marked as deleted and hidden from public view.
+            You can restore it by setting it to active.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card>
         <CardHeader>

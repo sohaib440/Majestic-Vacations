@@ -6,50 +6,43 @@ const Carousel = () => {
   const [current, setCurrent] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const prevBtnRef = useRef<HTMLButtonElement>(null);
-  const nextBtnRef = useRef<HTMLButtonElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const navigate = useNavigate(); // Changed from useRouter to useNavigate
+  const navigate = useNavigate();
 
   const cardsData = [
     {
-      title: "Dubai",
-      desc: "Experience the blend of modernity and tradition in Dubai, from towering skyscrapers to historic markets.",
+      title: "UAE",
+      desc: "Experience the blend of modernity and tradition in UAE, from towering skyscrapers to historic markets.",
       bg: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=2070&auto=format&fit=crop",
-      thumb:
-        "https://images.unsplash.com/photo-1518684079-3c830dcef090?q=80&w=987&auto=format&fit=crop",
+      thumb: "https://images.unsplash.com/photo-1518684079-3c830dcef090?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/dubai",
     },
     {
       title: "Turkey",
       desc: "Discover Turkey's rich history and diverse landscapes, from ancient ruins to bustling bazaars.",
       bg: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?q=80&w=2071&auto=format&fit=crop",
-      thumb:
-        "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=987&auto=format&fit=crop",
+      thumb: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/turkey",
     },
     {
       title: "Greece",
       desc: "Explore Greece's ancient heritage and stunning islands, where history meets breathtaking scenery.",
       bg: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?q=80&w=2070&auto=format&fit=crop",
-      thumb:
-        "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=987&auto=format&fit=crop",
+      thumb: "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/greece",
     },
     {
       title: "Thailand",
       desc: "Immerse yourself in Thailand's vibrant culture, delicious cuisine, and tropical paradises.",
       bg: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2139&auto=format&fit=crop",
-      thumb:
-        "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=987&auto=format&fit=crop",
+      thumb: "https://images.unsplash.com/photo-1528181304800-259b08848526?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/thailand",
     },
     {
       title: "Indonesia",
       desc: "Uncover Indonesia's diverse archipelago, offering a tapestry of cultures, landscapes, and adventures.",
       bg: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=2138&auto=format&fit=crop",
-      thumb:
-        "https://images.unsplash.com/photo-1555400038-63f5ba517a47?q=80&w=987&auto=format&fit=crop",
+      thumb: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?q=80&w=987&auto=format&fit=crop",
       path: "/destinations/indonesia",
     },
   ];
@@ -165,27 +158,6 @@ const Carousel = () => {
               Discover Your Next Adventure
             </GradientText>
           </ScrollRevealText>
-
-          {/* <div className="controls">
-            <button
-              ref={prevBtnRef}
-              className="nav-btn"
-              aria-label="Prev"
-              disabled={current === 0}
-              onClick={() => go(-1)}
-            >
-              ‹
-            </button>
-            <button
-              ref={nextBtnRef}
-              className="nav-btn"
-              aria-label="Next"
-              disabled={current === cardsData.length - 1}
-              onClick={() => go(1)}
-            >
-              ›
-            </button>
-          </div> */}
         </div>
 
         <div className="slider" ref={sliderRef}>
@@ -223,7 +195,7 @@ const Carousel = () => {
                       className="project-card__btn"
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(card.path); // Changed from router.push to navigate
+                        navigate(card.path);
                       }}
                     >
                       Details
@@ -240,9 +212,8 @@ const Carousel = () => {
             {cardsData.map((_, index) => (
               <span
                 key={index}
-                className={`dot ${
-                  current === index ? "active" : "!bg-red-300"
-                }`}
+                className={`dot ${current === index ? "active" : "!bg-red-300"
+                  }`}
                 onClick={() => activate(index, true)}
               />
             ))}
@@ -254,66 +225,16 @@ const Carousel = () => {
         .carousel-container {
           --gap: 1.25rem;
           --speed: 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-          --closed: 5rem;
-          --open: 60rem;
+          --closed: 5rem; /* Width when collapsed - SHOWING COUNTRY NAME */
+          --open: 35rem; /* Reduced from 60rem to show more cards */
           --accent: #915b05;
-        }
-
-        .head {
-          max-width: 1400px;
-          margin: auto;
-          padding: 70px 20px 40px;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          gap: 2rem;
-        }
-
-        .head h2 {
-          font: 400 1.5rem/1.2 Inter, sans-serif;
-          color: #fff;
-        }
-
-        @media (min-width: 1024px) {
-          .head h2 {
-            font-size: 2.25rem;
-          }
-        }
-
-        .nav-btn {
-          width: 2.5rem;
-          height: 2.5rem;
-          border: none;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.12);
-          color: #fff;
-          font-size: 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-
-        .nav-btn:hover:not(:disabled) {
-          background: var(--accent);
-        }
-
-        .nav-btn:disabled {
-          opacity: 0.3;
-          cursor: default;
         }
 
         .slider {
           max-width: 1400px;
           margin: auto;
           overflow: hidden;
-        }
-
-        .controls {
-          display: flex;
-          flex-direction: row;
-          gap: 0.5rem;
+          padding: 0 20px;
         }
 
         .track {
@@ -324,6 +245,9 @@ const Carousel = () => {
           scroll-behavior: smooth;
           scroll-snap-type: x mandatory;
           padding-bottom: 40px;
+          width: max-content;
+          min-width: 100%;
+          margin: 0 auto;
         }
 
         .track::-webkit-scrollbar {
@@ -338,6 +262,7 @@ const Carousel = () => {
           overflow: hidden;
           cursor: pointer;
           transition: flex-basis var(--speed), transform var(--speed);
+          scroll-snap-align: center;
         }
 
         .project-card[data-active="true"] {
@@ -376,12 +301,15 @@ const Carousel = () => {
           z-index: 2;
         }
 
+        /* IDLE STATE - Country name shown vertically */
         .project-card__title {
           color: #fff;
           font-weight: 700;
           font-size: 1.35rem;
           writing-mode: vertical-rl;
           transform: rotate(180deg);
+          text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+          letter-spacing: 2px;
         }
 
         .project-card__thumb,
@@ -390,6 +318,7 @@ const Carousel = () => {
           display: none;
         }
 
+        /* ACTIVE STATE */
         .project-card[data-active="true"] .project-card__content {
           flex-direction: row;
           align-items: center;
@@ -401,6 +330,7 @@ const Carousel = () => {
           writing-mode: horizontal-tb;
           transform: none;
           font-size: 2.4rem;
+          margin-bottom: 0.5rem;
         }
 
         .project-card[data-active="true"] .project-card__thumb,
@@ -434,6 +364,7 @@ const Carousel = () => {
           font-weight: 600;
           cursor: pointer;
           margin-top: 0.5rem;
+          transition: background 0.3s;
         }
 
         .project-card__btn:hover {
@@ -461,18 +392,111 @@ const Carousel = () => {
           transform: scale(1.2);
         }
 
+        /* Responsive adjustments for showing more cards */
+        @media (min-width: 1800px) {
+          .carousel-container {
+            --open: 40rem;
+          }
+        }
+
+        @media (min-width: 1600px) and (max-width: 1799px) {
+          .carousel-container {
+            --open: 38rem;
+          }
+        }
+
+        @media (min-width: 1400px) and (max-width: 1599px) {
+          .carousel-container {
+            --open: 35rem;
+          }
+        }
+
+        @media (min-width: 1200px) and (max-width: 1399px) {
+          .carousel-container {
+            --open: 32rem;
+          }
+        }
+
+        @media (min-width: 1024px) and (max-width: 1199px) {
+          .carousel-container {
+            --open: 30rem;
+          }
+          
+          .project-card__thumb {
+            width: 120px;
+            height: 240px;
+          }
+          
+          .project-card[data-active="true"] .project-card__title {
+            font-size: 2.2rem;
+          }
+        }
+
+        @media (min-width: 900px) and (max-width: 1023px) {
+          .carousel-container {
+            --open: 28rem;
+            --closed: 4.5rem;
+          }
+          
+          .project-card {
+            height: 24rem;
+          }
+          
+          .project-card__thumb {
+            width: 110px;
+            height: 220px;
+          }
+          
+          .project-card[data-active="true"] .project-card__title {
+            font-size: 2rem;
+          }
+          
+          .project-card__desc {
+            font-size: 0.95rem;
+            max-width: 14rem;
+          }
+        }
+
+        @media (min-width: 768px) and (max-width: 899px) {
+          .carousel-container {
+            --open: 25rem;
+            --closed: 4rem;
+            --gap: 1rem;
+          }
+          
+          .track {
+            padding-bottom: 30px;
+          }
+          
+          .project-card {
+            height: 22rem;
+          }
+          
+          .project-card__thumb {
+            width: 100px;
+            height: 200px;
+          }
+          
+          .project-card[data-active="true"] .project-card__title {
+            font-size: 1.8rem;
+          }
+          
+          .project-card__desc {
+            font-size: 0.9rem;
+            max-width: 12rem;
+          }
+          
+          .project-card__btn {
+            padding: 0.5rem 1.2rem;
+            font-size: 0.85rem;
+          }
+        }
+
         @media (max-width: 767px) {
           .carousel-container {
             --closed: 100%;
             --open: 100%;
             --gap: 0.8rem;
-          }
-
-          .head {
-            padding: 30px 15px 20px;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
           }
 
           .slider {
@@ -484,6 +508,7 @@ const Carousel = () => {
             scroll-snap-type: y mandatory;
             gap: 0.8rem;
             padding-bottom: 20px;
+            width: 100%;
           }
 
           .project-card {
@@ -558,19 +583,20 @@ const Carousel = () => {
           .dots {
             display: none;
           }
+        }
 
-          .controls {
-            width: 100%;
-            justify-content: space-between;
-            padding: 0 15px 20px;
+        @media (max-width: 480px) {
+          .project-card[data-active="true"] {
+            min-height: 350px;
           }
-
-          .nav-btn {
-            position: static;
-            transform: none;
-            width: 2rem;
-            height: 2rem;
-            font-size: 1.2rem;
+          
+          .project-card[data-active="true"] .project-card__thumb {
+            width: 180px;
+            height: 240px;
+          }
+          
+          .project-card[data-active="true"] .project-card__title {
+            font-size: 1.6rem;
           }
         }
       `}</style>

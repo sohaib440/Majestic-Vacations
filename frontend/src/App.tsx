@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import CurrencyProvider from "@/providers/CurrencyProvider";
 import ScrollToTop from "@/components/ScrollToTop";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -45,66 +46,68 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <BrowserRouter>
-          <ScrollToTop />
+        {/* Wrap everything with CurrencyProvider */}
+        <CurrencyProvider>
+          <BrowserRouter>
+            <ScrollToTop />
 
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/packages/:id" element={<Layout> <PublicTourPage /> </Layout>} />
-            <Route path="/booking/create" element={<Layout><CreateBookingPage /></Layout>} /> {/* Added public booking route */}
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/testimonials" element={<Testimonials />} />
-            <Route path="/destinations/dubai" element={<Dubai />} />
-            <Route path="/destinations/turkey" element={<Turkey />} />
-            <Route path="/destinations/greece" element={<Greece />} />
-            <Route path="/destinations/thailand" element={<Thailand />} />
-            <Route path="/destinations/indonesia" element={<Indonesia />} />
-            <Route path="/packages" element={<Package />} />
-            <Route path="/payment/:bookingId" element={<PaymentPage />} />
-            <Route path="/booking/success" element={<BookingSuccess />} />
-            <Route path="/booking/cancel" element={<BookingCancel />} />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/packages/:id" element={<Layout> <PublicTourPage /> </Layout>} />
+              <Route path="/booking/create" element={<Layout><CreateBookingPage /></Layout>} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/destinations/dubai" element={<Dubai />} />
+              <Route path="/destinations/turkey" element={<Turkey />} />
+              <Route path="/destinations/greece" element={<Greece />} />
+              <Route path="/destinations/thailand" element={<Thailand />} />
+              <Route path="/destinations/indonesia" element={<Indonesia />} />
+              <Route path="/packages" element={<Package />} />
+              <Route path="/payment/:bookingId" element={<PaymentPage />} />
+              <Route path="/booking/success" element={<BookingSuccess />} />
+              <Route path="/booking/cancel" element={<BookingCancel />} />
 
+              {/* Auth routes */}
+              <Route path="/login" element={<Login />} />
 
-            {/* Auth routes */}
-            <Route path="/login" element={<Login />} />
+              {/* Protected Admin routes */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']} redirectTo="/">
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
 
-            {/* Protected Admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={['admin']} redirectTo="/">
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<Dashboard />} />
+                {/* Tour Management */}
+                <Route path="packages" element={<Packages />} />
+                <Route path="packages/create" element={<CreatePackage />} />
+                <Route path="packages/:id/edit" element={<EditPackage />} />
+                <Route path="packages/:id/detail" element={<AdminTourDetailPage />} />
 
-              {/* Tour Management */}
-              <Route path="packages" element={<Packages />} />
-              <Route path="packages/create" element={<CreatePackage />} />
-              <Route path="packages/:id/edit" element={<EditPackage />} />
-              <Route path="packages/:id/detail" element={<AdminTourDetailPage />} />
+                {/* Booking Management */}
+                <Route path="bookings" element={<BookingsPage />} />
+                <Route path="bookings/create" element={<CreateBookingPage />} />
+                <Route path="bookings/:id" element={<BookingDetailPage />} />
+                <Route path="bookings/:id/edit" element={<EditBookingPage />} />
 
-              {/* Booking Management  */}
-              <Route path="bookings" element={<BookingsPage />} />
-              <Route path="bookings/create" element={<CreateBookingPage />} />
-              <Route path="bookings/:id" element={<BookingDetailPage />} />
-              <Route path="bookings/:id/edit" element={<EditBookingPage />} />
+                {/* Customer Management */}
+                <Route path="customers" element={<CustomersPage />} />
 
-              {/* Customer Management - NEW */}
-              <Route path="customers" element={<CustomersPage />} />
+                {/* Inquiry Management */}
+                <Route path="inquiry" element={<InquiryPage />} />
+              </Route>
 
-              {/* Inquiry Management */}
-              <Route path="inquiry" element={<InquiryPage />} />
-            </Route>
-
-            {/* 404 route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              {/* 404 route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </CurrencyProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

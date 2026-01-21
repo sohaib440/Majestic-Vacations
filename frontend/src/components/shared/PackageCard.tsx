@@ -13,6 +13,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { TourPackage } from '@/types/tour-package';
 import { formatPrice } from '@/lib/tour-utils';
+import { CurrencyPrice } from './currency/CurrencyPrice';
 
 export interface PackageCardProps {
    tour: TourPackage;
@@ -38,7 +39,9 @@ const PackageCard: React.FC<PackageCardProps> = ({
       ? `${baseUrl}/${tour.images[0]}`
       : '/placeholder.svg';
 
-   const formattedDate = tour.startDate;
+   const formattedStartDate = new Date(tour.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+   const formattedEndDate = new Date(tour.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+   const formattedDateRange = `${formattedStartDate} - ${formattedEndDate}`;
 
    const handleBooking = (e: React.MouseEvent) => {
       e.preventDefault();
@@ -56,7 +59,8 @@ const PackageCard: React.FC<PackageCardProps> = ({
       }
       return { text: '', color: '', show: false };
    };
-
+   const isInactive = !tour.isActive;
+   const isDeleted = tour.isDeleted;
    const seatStatus = getSeatStatus();
 
    return (
@@ -71,6 +75,19 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      e.currentTarget.src = "/placeholder.svg";
                   }}
                />
+               {/* Add status badges */}
+               <div className="absolute top-3 left-3 space-y-2">
+                  {isDeleted && (
+                     <Badge variant="destructive" className="text-xs">
+                        Deleted
+                     </Badge>
+                  )}
+                  {isInactive && !isDeleted && (
+                     <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs">
+                        Inactive
+                     </Badge>
+                  )}
+               </div>
                {tour.images && tour.images.length > 1 && (
                   <Badge className="absolute bottom-3 right-3 bg-black/70 hover:bg-black/80 text-white text-xs">
                      +{tour.images.length - 1} more
@@ -113,7 +130,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
                   </Badge>
                   <Badge variant="outline" className="text-xs">
                      <Calendar className="h-3 w-3 mr-1" />
-                     {formattedDate}
+                     {formattedDateRange}
                   </Badge>
                </div>
 
@@ -140,10 +157,10 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
                            className={`h-1.5 rounded-full ${tour.availableSeats === 0
-                                 ? 'bg-red-500'
-                                 : tour.availableSeats <= 3
-                                    ? 'bg-yellow-500'
-                                    : 'bg-green-500'
+                              ? 'bg-red-500'
+                              : tour.availableSeats <= 3
+                                 ? 'bg-yellow-500'
+                                 : 'bg-green-500'
                               }`}
                            style={{
                               width: `${Math.min(100, (tour.bookedSeats / tour.groupSize) * 100)}%`
@@ -164,20 +181,23 @@ const PackageCard: React.FC<PackageCardProps> = ({
                   </ul>
                )}
             </CardContent>
-
+            
             <CardFooter className="p-5 pt-0 flex items-end justify-between">
                <div>
                   {tour.originalPrice && tour.originalPrice > tour.price && (
                      <p className="text-sm text-muted-foreground line-through">
-                        {formatPrice(tour.originalPrice)}
+                        <CurrencyPrice
+                           amount={tour.originalPrice}
+                           variant="compact"
+                           showSymbol={false}
+                        />
                      </p>
                   )}
-                  <div className="flex items-baseline gap-1">
-                     <span className="text-2xl font-serif font-bold text-primary">
-                        {formatPrice(tour.price)}
-                     </span>
-                     <span className="text-sm font-normal text-muted-foreground">/person</span>
-                  </div>
+                  <CurrencyPrice
+                     amount={tour.price}
+                     variant="compact"
+                     className="text-primary"
+                  />
                </div>
                <Button
                   onClick={handleBooking}

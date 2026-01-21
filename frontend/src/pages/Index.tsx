@@ -11,44 +11,6 @@ import { ArrowRight, Star, Shield, Clock, HeartHandshake, Plane, MapPin, Users }
 import Aboutus from "./Home Section/Aboutus";
 import Carousel from "./Home Section/Carousel";
 
-const destinations = [
-  {
-    name: "Dubai",
-    country: "United Arab Emirates",
-    image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80",
-    path: "/destinations/dubai",
-    description: "Luxury, adventure, and architectural marvels in the city of gold.",
-  },
-  {
-    name: "Turkey",
-    country: "Turkey",
-    image: "https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800&q=80",
-    path: "/destinations/turkey",
-    description: "Where ancient history meets stunning natural landscapes.",
-  },
-  {
-    name: "Greece",
-    country: "Greece",
-    image: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&q=80",
-    path: "/destinations/greece",
-    description: "Sun-kissed islands and timeless Mediterranean beauty.",
-  },
-  {
-    name: "Thailand",
-    country: "Thailand",
-    image: "https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80",
-    path: "/destinations/thailand",
-    description: "Tropical paradise with vibrant culture and cuisine.",
-  },
-  {
-    name: "Indonesia",
-    country: "Indonesia",
-    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80",
-    path: "/destinations/indonesia",
-    description: "Mystical temples, pristine beaches, and natural wonders.",
-  },
-];
-
 const featuredPackagesData = [
   {
     title: "Dubai Luxury Escape",
@@ -137,13 +99,6 @@ const features = [
   },
 ];
 
-const stats = [
-  { icon: Users, value: "10K+", label: "Happy Travelers" },
-  { icon: MapPin, value: "5", label: "Dream Destinations" },
-  { icon: Plane, value: "500+", label: "Tours Completed" },
-  { icon: Star, value: "4.9", label: "Average Rating" },
-];
-
 export default function Index() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -173,14 +128,10 @@ export default function Index() {
     }
   }, []);
 
-  const scrollToContact = () => {
-    window.location.href = "/contact";
-  };
-
   return (
     <Layout>
       {/* Hero Section - Moved padding-top here instead of min-height calculation */}
-      <section className="relative pt-20 min-h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative py-44 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <video
             ref={videoRef}

@@ -17,7 +17,7 @@ const PublicTourPage: React.FC = () => {
    const isUserAdmin = currentUser?.role === 'admin';
 
    // For public page, always show public view
-   return <TourDetailPage id={id} isAdmin={false} isPublic={true} />;
+   return <TourDetailPage id={id} isAdmin={false} includeDeleted={false} />;
 };
 
 export default PublicTourPage;
