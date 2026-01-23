@@ -18,7 +18,19 @@ const bookingSchema = new mongoose.Schema(
       nationality: String,
       passportNumber: String,
     },
-    seatsBooked: { type: Number, required: true, min: 1, default: 1 },
+    participants: [
+      {
+        ageGroup: {
+          type: String,
+          required: true,
+        },
+        count: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+      },
+    ],
     pricing: {
       totalAmount: { type: Number, required: true, min: 1 },
       currency: { type: String, default: "USD" },
@@ -37,6 +49,11 @@ const bookingSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Add a virtual property to get the total number of seats booked
+bookingSchema.virtual("seatsBooked").get(function () {
+  return this.participants.reduce((total, p) => total + p.count, 0);
+});
 
 // Generate booking reference
 bookingSchema.pre("save", function (next) {

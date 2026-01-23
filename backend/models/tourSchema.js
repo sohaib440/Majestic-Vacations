@@ -43,30 +43,28 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A tour must have a duration'],
     },
-    groupSize: {
-      type: Number,
-      required: [true, 'A tour must have a group size'],
-      min: [1, 'Group size must be at least 1']
-    },
-    price: {
-      type: Number,
-      required: [true, 'A tour must have a price'],
-      min: [0, 'Price cannot be negative'],
-    },
-    pricePerMonth: {
-      type: Number,
-      min: [0, 'Price per month cannot be negative'],
-      required: [true, 'A tour must have a monthly payment price'],
-    },
-    originalPrice: {
-      type: Number,
-      min: [0, 'Original price cannot be negative'],
-    },
+    priceTiers: [
+      {
+        ageGroup: {
+          type: String,
+          required: true,
+        },
+        ageRange: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+          min: [0, "Price cannot be negative"],
+        },
+      },
+    ],
     rating: {
       type: Number,
       default: 4.8,
-      min: [1, 'Rating must be at least 1'],
-      max: [5, 'Rating must be at most 5'],
+      min: [1, "Rating must be at least 1"],
+      max: [5, "Rating must be at most 5"],
     },
     highlights: {
       type: [{
@@ -95,9 +93,11 @@ const tourSchema = new mongoose.Schema(
       default: 0,
       min: [0, 'Booked seats cannot be negative']
     },
-    availableSeats: {
+    availableSeats: { // Now directly managed by admin
       type: Number,
-      min: [0, 'Available seats cannot be negative']
+      required: [true, 'Available seats is required'],
+      min: [0, 'Available seats cannot be negative'],
+      default: 0,
     },
     isActive: {
       type: Boolean,
@@ -119,48 +119,21 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
-// Calculate available seats before saving
+// Pre-save hook to ensure bookedSeats does not exceed availableSeats
 tourSchema.pre('save', function (next) {
-  // Ensure groupSize and pricePerMonth are numbers
-  if (typeof this.groupSize === 'string') {
-    this.groupSize = parseInt(this.groupSize) || 0;
+  // Ensure bookedSeats does not exceed availableSeats
+  if (this.bookedSeats > this.availableSeats) {
+    this.bookedSeats = this.availableSeats; // Cap bookedSeats at availableSeats
   }
-
-  if (typeof this.pricePerMonth === 'string') {
-    this.pricePerMonth = parseFloat(this.pricePerMonth) || 0;
-  }
-
-  // Calculate available seats
-  this.availableSeats = Math.max(0, this.groupSize - this.bookedSeats);
-
-  // Ensure bookedSeats doesn't exceed groupSize
-  if (this.bookedSeats > this.groupSize) {
-    this.bookedSeats = this.groupSize;
-  }
-
   next();
 });
 
 // Virtuals
 tourSchema.virtual('seatInfo').get(function () {
   return {
-    totalSeats: this.groupSize,
+    totalSeats: this.groupSize, // groupSize can still be used for informational purposes
     bookedSeats: this.bookedSeats,
-    availableSeats: Math.max(0, this.groupSize - this.bookedSeats)
-  };
-});
-
-tourSchema.virtual('monthlyPaymentInfo').get(function () {
-  if (!this.price || !this.pricePerMonth) return null;
-
-  const monthsRequired = Math.ceil(this.price / this.pricePerMonth);
-  const lastPayment = this.price - (this.pricePerMonth * (monthsRequired - 1));
-
-  return {
-    totalPrice: this.price,
-    monthlyPrice: this.pricePerMonth,
-    monthsRequired,
-    lastPayment
+    availableSeats: this.availableSeats - this.bookedSeats >= 0 ? this.availableSeats - this.bookedSeats : 0 // Remaining seats from admin-set availableSeats
   };
 });
 

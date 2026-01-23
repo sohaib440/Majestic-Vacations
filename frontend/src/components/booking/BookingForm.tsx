@@ -1,6 +1,6 @@
 // src/components/booking/BookingForm.tsx
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +46,12 @@ const bookingFormSchema = z.object({
     nationality: z.string().optional(),
     passportNumber: z.string().optional(),
   }),
-  seatsBooked: z.number().min(1, 'At least 1 seat is required'),
+  participants: z.array(
+    z.object({
+      ageGroup: z.string(),
+      count: z.number().min(0, 'Count cannot be negative'),
+    })
+  ).min(1, 'At least one participant is required for booking'),
   pricing: z.object({
     totalAmount: z.number().min(1, 'Total amount must be greater than 0'),
     currency: z.string().default('USD'),
@@ -87,7 +92,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       ? {
           tour: initialData.tour._id,
           customerInfo: initialData.customerInfo,
-          seatsBooked: initialData.seatsBooked,
+          participants: initialData.participants,
           pricing: initialData.pricing,
           termsAccepted: initialData.termsAccepted,
         }
@@ -100,7 +105,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             nationality: '',
             passportNumber: '',
           },
-          seatsBooked: 1,
+          participants: [],
           pricing: {
             totalAmount: 0,
             currency: currentCurrency,
@@ -109,13 +114,18 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           termsAccepted: false,
         },
   });
+  const { fields: participantFields, append: appendParticipant, update: updateParticipant } = useFieldArray({
+    control: form.control,
+    name: "participants",
+  });
 
   const selectedTourId = form.watch('tour');
-  const seatsBooked = form.watch('seatsBooked');
+  const participants = form.watch('participants');
+  const totalParticipants = participants.reduce((total, p) => total + p.count, 0);
 
-  const { data: availability } = useCheckTourAvailability(selectedTourId, seatsBooked);
+  const { data: availability } = useCheckTourAvailability(selectedTourId, totalParticipants);
 
-  // Auto-fill tour from URL
+  // Auto-fill tour from URL and initialize participants
   useEffect(() => {
     if (tourIdFromUrl && !initialData && tours.length > 0) {
       setIsLoadingTour(true);
@@ -125,37 +135,91 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         form.setValue('tour', tourIdFromUrl);
         setSelectedTour(tour);
 
-        const totalAmount = tour.price * form.getValues().seatsBooked;
-        form.setValue('pricing.totalAmount', totalAmount);
+        // Initialize participants based on priceTiers
+        if (tour.priceTiers && tour.priceTiers.length > 0) {
+          form.setValue(
+            'participants',
+            tour.priceTiers.map(tier => ({
+              ageGroup: tier.ageGroup,
+              count: 0,
+            }))
+          );
+        } else {
+          // Fallback if no priceTiers, though schema requires at least one
+          form.setValue('participants', [{ ageGroup: 'Adult', count: 0 }]);
+        }
+        
+        // The total amount will be calculated in a separate effect
+        form.setValue('pricing.totalAmount', 0); // Reset for recalculation
 
         if (tour.monthlyPaymentInfo) {
-          form.setValue('pricing.monthlyAmount', tour.monthlyPaymentInfo.monthlyPrice * seatsBooked);
+          form.setValue('pricing.monthlyAmount', tour.monthlyPaymentInfo.monthlyPrice * totalParticipants);
           form.setValue('pricing.monthsRequired', tour.monthlyPaymentInfo.monthsRequired);
         }
       }
       setIsLoadingTour(false);
     }
-  }, [tourIdFromUrl, tours, form, initialData, seatsBooked]);
+  }, [tourIdFromUrl, tours, form, initialData, totalParticipants, appendParticipant]);
 
-  // Update total when seats or tour changes
+  // Update total when participants or tour changes
   useEffect(() => {
-    if (selectedTour) {
-      const total = selectedTour.price * seatsBooked;
-      form.setValue('pricing.totalAmount', total);
+    if (selectedTour && participants.length > 0) {
+      let calculatedTotal = 0;
+      for (const participant of participants) {
+        const priceTier = selectedTour.priceTiers.find(
+          (tier) => tier.ageGroup === participant.ageGroup
+        );
+        if (priceTier) {
+          calculatedTotal += priceTier.price * participant.count;
+        }
+      }
+      form.setValue('pricing.totalAmount', calculatedTotal);
 
+      // Recalculate monthly amount based on total calculated and total participants
       if (selectedTour.monthlyPaymentInfo) {
-        form.setValue('pricing.monthlyAmount', selectedTour.monthlyPaymentInfo.monthlyPrice * seatsBooked);
+        // This logic might need adjustment if monthly price is not proportional to total participants
+        // For now, assuming it is.
+        form.setValue(
+          'pricing.monthlyAmount',
+          (calculatedTotal / selectedTour.priceTiers.reduce((sum, tier) => sum + tier.price, 1)) * selectedTour.monthlyPaymentInfo.monthlyPrice
+        );
         form.setValue('pricing.monthsRequired', selectedTour.monthlyPaymentInfo.monthsRequired);
       }
     }
-  }, [selectedTour, seatsBooked, form]);
+  }, [selectedTour, participants, form]);
 
   useEffect(() => {
     if (selectedTourId) {
       const tour = tours.find(t => t._id === selectedTourId);
       setSelectedTour(tour || null);
+
+      // If a tour is selected, and it has price tiers, ensure participants are aligned
+      if (tour && tour.priceTiers && tour.priceTiers.length > 0) {
+        // Only update participants if they are not already set, or if they are outdated
+        const currentParticipantAgeGroups = form.getValues('participants').map(p => p.ageGroup);
+        const tourPriceTierAgeGroups = tour.priceTiers.map(pt => pt.ageGroup);
+
+        const needsUpdate =
+          currentParticipantAgeGroups.length !== tourPriceTierAgeGroups.length ||
+          !currentParticipantAgeGroups.every(ag => tourPriceTierAgeGroups.includes(ag));
+
+        if (needsUpdate) {
+          form.setValue(
+            'participants',
+            tour.priceTiers.map(tier => {
+              const existingParticipant = participants.find(p => p.ageGroup === tier.ageGroup);
+              return {
+                ageGroup: tier.ageGroup,
+                count: existingParticipant ? existingParticipant.count : 0,
+              };
+            })
+          );
+        }
+      } else {
+        form.setValue('participants', []); // Clear if no price tiers
+      }
     }
-  }, [selectedTourId, tours]);
+  }, [selectedTourId, tours, form, participants]);
 
   const onSubmit = async (values: BookingFormValues) => {
     // Create a deep copy to avoid mutating the original form state
@@ -187,7 +251,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         // Automatic redirect to payment page
         setTimeout(() => {
           navigate(`/payment/${bookingId}`);
-        }, 1200);
+        } , 1200);
       }
     } catch (error: any) {
       toast({
@@ -199,8 +263,17 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   };
 
   const calculateTotalAmount = () => {
-    if (!selectedTour) return 0;
-    return selectedTour.price * seatsBooked;
+    if (!selectedTour || participants.length === 0) return 0;
+    let total = 0;
+    for (const participant of participants) {
+      const priceTier = selectedTour.priceTiers.find(
+        (tier) => tier.ageGroup === participant.ageGroup
+      );
+      if (priceTier) {
+        total += priceTier.price * participant.count;
+      }
+    }
+    return total;
   };
 
   return (
@@ -265,15 +338,18 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                         </p>
                       </div>
                         <div className="text-right">
-                          <p>Price per person:
-                            <strong>
-                              <CurrencyPrice amount={selectedTour.price} variant="compact" showSymbol={false} />
-                            </strong>
-                          </p>
-                          {selectedTour.pricePerMonth && (
-                            <p>Monthly:
+                          {selectedTour.priceTiers.map((tier, index) => (
+                            <p key={index} className="text-sm">
+                              {tier.ageGroup} ({tier.ageRange}):{' '}
                               <strong>
-                                <CurrencyPrice amount={selectedTour.pricePerMonth} variant="compact" showSymbol={false} />
+                                <CurrencyPrice amount={tier.price} variant="compact" showSymbol={false} />
+                              </strong>
+                            </p>
+                          ))}
+                          {selectedTour.monthlyPaymentInfo && (
+                            <p className="text-sm">Monthly starting from:
+                              <strong>
+                                <CurrencyPrice amount={selectedTour.monthlyPaymentInfo.monthlyPrice} variant="compact" showSymbol={false} />
                                 /month
                               </strong>
                             </p>
@@ -283,28 +359,53 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                   </div>
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="seatsBooked"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Number of Seats *</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="1"
-                          max={selectedTour?.availableSeats || 20}
-                          {...field}
-                          onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                <div>
+                  <FormLabel>Participants by Age Group *</FormLabel>
+                  <FormDescription className="mb-3">
+                    Specify the number of participants for each age group.
+                  </FormDescription>
+                  <div className="space-y-3">
+                    {participantFields.map((field, index) => (
+                      <div key={field.id} className="flex items-center gap-4">
+                        <div className="w-1/2">
+                          <Input
+                            type="text"
+                            value={`${selectedTour?.priceTiers.find(pt => pt.ageGroup === field.ageGroup)?.ageGroup} (${selectedTour?.priceTiers.find(pt => pt.ageGroup === field.ageGroup)?.ageRange})`}
+                            readOnly
+                            className="bg-gray-100 dark:bg-gray-800"
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name={`participants.${index}.count`}
+                          render={({ field: countField }) => (
+                            <FormItem className="w-1/2">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  {...countField}
+                                  onChange={e => {
+                                    countField.onChange(parseInt(e.target.value) || 0);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                      <FormDescription>
-                        Maximum available: {selectedTour?.availableSeats || 0}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
+                      </div>
+                    ))}
+                  </div>
+                  {participantFields.length === 0 && (
+                    <Alert variant="warning">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        No price tiers defined for the selected tour. Please select a tour with defined price tiers.
+                      </AlertDescription>
+                    </Alert>
                   )}
-                />
+                </div>
 
                 {availability && (
                   <Alert variant={availability.isAvailable ? "default" : "destructive"}>
@@ -373,14 +474,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     Total: <CurrencyPrice amount={calculateTotalAmount()} variant="detail" />
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {seatsBooked} × <CurrencyPrice amount={selectedTour?.price || 0} variant="compact" showSymbol={false} />
+                    {totalParticipants} participants
                   </p>
                 </div>
                 {selectedTour?.monthlyPaymentInfo && (
                   <Badge variant="secondary" className="text-base px-4 py-1">
                     Monthly:
                     <CurrencyPrice
-                      amount={selectedTour.monthlyPaymentInfo.monthlyPrice * seatsBooked}
+                      amount={calculateTotalAmount() / (selectedTour.monthlyPaymentInfo.monthsRequired || 1)}
                       variant="compact"
                       showSymbol={false}
                     />
@@ -469,7 +570,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
             <Button
               type="submit"
-              disabled={isCreating || isLoadingTour || form.formState.isSubmitting}
+              disabled={isCreating || isLoadingTour || form.formState.isSubmitting || totalParticipants === 0 || !availability?.isAvailable}
               className="flex-1 md:flex-none min-w-[220px]"
             >
               {isCreating || isLoadingTour || form.formState.isSubmitting ? (
