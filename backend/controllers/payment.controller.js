@@ -73,7 +73,7 @@ exports.createPayment = async (req, res) => {
         payment_method_types: ['card'],
         line_items: [{
           price_data: {
-            currency: booking.pricing.currency.toLowerCase() || 'usd',
+            currency: 'usd',
             product_data: {
               name: `Booking ${booking.bookingReference} - ${booking.tour?.title || 'Tour'}`,
               description: `${booking.seatsBooked} seat(s) • ${booking.tour?.destination || ''}`,
@@ -103,7 +103,7 @@ exports.createPayment = async (req, res) => {
         provider: "stripe",
         providerPaymentId: session.id,
         amount: amount / 100,
-        currency: booking.pricing.currency,
+        currency: 'usd',
         status: "created",
         paymentPlan,
         installmentNumber: installmentNumber || 1,
@@ -133,7 +133,7 @@ exports.createPayment = async (req, res) => {
         transactions: [{
           amount: {
             total: (amount / 100).toFixed(2),
-            currency: booking.pricing.currency || "USD",
+            currency: "USD",
           },
           description: `Payment for booking ${booking.bookingReference} - ${paymentPlan}`,
         }],
@@ -151,7 +151,7 @@ exports.createPayment = async (req, res) => {
         provider: "paypal",
         providerPaymentId: paypalPayment.id,
         amount: amount / 100,
-        currency: booking.pricing.currency,
+        currency: "usd",
         status: "created",
         paymentPlan,
         installmentNumber,

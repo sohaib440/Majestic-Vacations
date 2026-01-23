@@ -74,7 +74,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const tourIdFromUrl = searchParams.get('tourId');
-  const { currentCurrency } = useCurrency();
+  const { currentCurrency, convert } = useCurrency();
   const [selectedTour, setSelectedTour] = useState<TourForBooking | null>(null);
   const [isLoadingTour, setIsLoadingTour] = useState(false);
 
@@ -158,8 +158,23 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   }, [selectedTourId, tours]);
 
   const onSubmit = async (values: BookingFormValues) => {
+    // Create a deep copy to avoid mutating the original form state
+    const valuesInUSD = JSON.parse(JSON.stringify(values));
+
+    if (currentCurrency !== 'USD') {
+      const totalAmountInUSD = convert(values.pricing.totalAmount, currentCurrency, 'USD');
+      valuesInUSD.pricing.totalAmount = totalAmountInUSD;
+
+      if (values.pricing.monthlyAmount) {
+        const monthlyAmountInUSD = convert(values.pricing.monthlyAmount, currentCurrency, 'USD');
+        valuesInUSD.pricing.monthlyAmount = monthlyAmountInUSD;
+      }
+      
+      valuesInUSD.pricing.currency = 'USD';
+    }
+
     try {
-      const response = await createBooking(values);
+      const response = await createBooking(valuesInUSD);
 
       if (response?.success) {
         const bookingId = response.data?._id || response.bookingId;
