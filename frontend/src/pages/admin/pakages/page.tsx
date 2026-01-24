@@ -131,8 +131,6 @@ const AdminPackagesPage: React.FC = () => {
                 <TableHead>Date</TableHead>
                 <TableHead>Destination</TableHead>
                 <TableHead>Duration</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Group Size</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead>Featured</TableHead>
                 <TableHead>Status</TableHead>
@@ -165,15 +163,6 @@ const AdminPackagesPage: React.FC = () => {
                   </TableCell>
                   <TableCell>{tour.destination}</TableCell>
                   <TableCell>{tour.duration}</TableCell>
-                  <TableCell>
-                    <div className="font-medium">{formatPrice(tour.price)}</div>
-                    {tour.originalPrice && tour.originalPrice > tour.price && (
-                      <div className="text-sm text-muted-foreground line-through">
-                        {formatPrice(tour.originalPrice)}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>{tour.groupSize}</TableCell>
                   <TableCell>⭐ {tour.rating.toFixed(1)}</TableCell>
                   <TableCell>
                     {tour.featured ? (

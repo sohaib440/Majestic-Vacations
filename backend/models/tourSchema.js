@@ -88,16 +88,10 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    bookedSeats: {
+    remaining_seats: {
       type: Number,
       default: 0,
-      min: [0, 'Booked seats cannot be negative']
-    },
-    availableSeats: { // Now directly managed by admin
-      type: Number,
-      required: [true, 'Available seats is required'],
-      min: [0, 'Available seats cannot be negative'],
-      default: 0,
+      min: [0, 'Remaining seats cannot be negative']
     },
     isActive: {
       type: Boolean,
@@ -118,24 +112,6 @@ const tourSchema = new mongoose.Schema(
     toObject: { virtuals: true },
   }
 );
-
-// Pre-save hook to ensure bookedSeats does not exceed availableSeats
-tourSchema.pre('save', function (next) {
-  // Ensure bookedSeats does not exceed availableSeats
-  if (this.bookedSeats > this.availableSeats) {
-    this.bookedSeats = this.availableSeats; // Cap bookedSeats at availableSeats
-  }
-  next();
-});
-
-// Virtuals
-tourSchema.virtual('seatInfo').get(function () {
-  return {
-    totalSeats: this.groupSize, // groupSize can still be used for informational purposes
-    bookedSeats: this.bookedSeats,
-    availableSeats: this.availableSeats - this.bookedSeats >= 0 ? this.availableSeats - this.bookedSeats : 0 // Remaining seats from admin-set availableSeats
-  };
-});
 
 const Tour = mongoose.model('Tour', tourSchema);
 

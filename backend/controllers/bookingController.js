@@ -1,14 +1,13 @@
 // controllers/bookingController.js
 const Booking = require("../models/booking.model");
 const Tour = require("../models/tourSchema");
-const { updateTourSeatsHelper, releaseTourSeatsHelper } = require("../controllers/tourPackage.controller");
 
 // CREATE
 exports.createBooking = async (req, res) => {
   try {
     const { tour: tourId, participants } = req.body;
 
-    // Fetch the tour to get priceTiers and current seat info
+    // Fetch the tour to get priceTiers and check remaining_seats
     const tour = await Tour.findById(tourId);
     if (!tour) {
       return res
@@ -16,9 +15,16 @@ exports.createBooking = async (req, res) => {
         .json({ success: false, message: "Tour not found" });
     }
 
-    // Calculate total amount and total participants
+    // Check if bookings are open
+    if (tour.remaining_seats === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Sorry, this tour is fully booked and no longer accepting new bookings.",
+      });
+    }
+
+    // Calculate total amount
     let totalAmount = 0;
-    let totalParticipants = 0;
     for (const participant of participants) {
       const priceTier = tour.priceTiers.find(
         (pt) => pt.ageGroup === participant.ageGroup
@@ -30,15 +36,6 @@ exports.createBooking = async (req, res) => {
         });
       }
       totalAmount += priceTier.price * participant.count;
-      totalParticipants += participant.count;
-    }
-
-    // Check if there are enough available seats
-    if (tour.availableSeats < totalParticipants) {
-      return res.status(400).json({
-        success: false,
-        message: `Not enough seats available. Required: ${totalParticipants}, Available: ${tour.availableSeats}`,
-      });
     }
 
     // Create a new booking with the calculated total amount
@@ -51,19 +48,6 @@ exports.createBooking = async (req, res) => {
     });
 
     await booking.save();
-    
-    // Update tour booked seats
-    const updateResult = await updateTourSeatsHelper(tourId, totalParticipants);
-    if (!updateResult.success) {
-      // If updating seats fails, consider rolling back the booking or marking it for review
-      console.error(
-        `Failed to update seats for tour ${tourId} after booking ${booking._id}: ${updateResult.message}`
-      );
-      // For now, we'll proceed, but in a production system, you might want to:
-      // - Delete the newly created booking: await Booking.findByIdAndDelete(booking._id);
-      // - Mark the booking with a specific status like "pending_seat_allocation_failure"
-      // - Rollback the entire transaction if using MongoDB transactions
-    }
 
     // Populate the 'tour' field
     const populatedBooking = await Booking.findById(booking._id).populate('tour');

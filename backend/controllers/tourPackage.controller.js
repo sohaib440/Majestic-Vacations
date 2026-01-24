@@ -1,6 +1,5 @@
 const Tour = require("../models/tourSchema");
 
-// Helper functions
 // Helper: Validate price tiers structure
 const validatePriceTiers = (priceTiers) => {
   if (!Array.isArray(priceTiers) || priceTiers.length === 0) {
@@ -22,62 +21,6 @@ const validatePriceTiers = (priceTiers) => {
     }
   }
   return null; // No validation errors
-};
-
-const updateTourSeats = async (tourId, seatsToBook) => {
-  try {
-    const updatedTour = await Tour.findOneAndUpdate(
-      { _id: tourId, isActive: true, isDeleted: false },
-      { $inc: { bookedSeats: seatsToBook } },
-      { new: true }
-    );
-
-    if (!updatedTour) {
-      return { success: false, message: "Active tour not found" };
-    }
-
-    return {
-      success: true,
-      tour: updatedTour,
-      bookedSeats: updatedTour.bookedSeats,
-      availableSeats: updatedTour.availableSeats,
-    };
-  } catch (error) {
-    console.error("Error updating tour seats:", error);
-    return {
-      success: false,
-      message: "Error updating seats",
-      error: error.message,
-    };
-  }
-};
-
-const releaseTourSeats = async (tourId, seatsToRelease) => {
-  try {
-    const updatedTour = await Tour.findOneAndUpdate(
-      { _id: tourId, isActive: true, isDeleted: false },
-      { $inc: { bookedSeats: -seatsToRelease } },
-      { new: true }
-    );
-
-    if (!updatedTour) {
-      return { success: false, message: "Active tour not found" };
-    }
-
-    return {
-      success: true,
-      tour: updatedTour,
-      bookedSeats: updatedTour.bookedSeats,
-      availableSeats: updatedTour.availableSeats,
-    };
-  } catch (error) {
-    console.error("Error releasing tour seats:", error);
-    return {
-      success: false,
-      message: "Error releasing seats",
-      error: error.message,
-    };
-  }
 };
 
 // Helper: Parse boolean from query
@@ -104,7 +47,7 @@ const getAllTours = async (req, res) => {
 
     // Boolean filters
     if (query.featured !== undefined) filter.featured = parseBool(query.featured);
-    if (query.availableOnly === "true") filter.availableSeats = { $gt: 0 };
+    if (query.availableOnly === "true") filter.remaining_seats = { $gt: 0 };
 
     // Text search filters
     if (query.title) filter.title = { $regex: query.title, $options: "i" };
@@ -150,8 +93,6 @@ const getAllTours = async (req, res) => {
       "price-desc": { "priceTiers.price": -1 },
       "rating-desc": { rating: -1 },
       "date-asc": { startDate: 1 },
-      "available-asc": { availableSeats: 1 },
-      "available-desc": { availableSeats: -1 },
     };
 
     const sortField = query.sort ? sortOptions[query.sort] || { [query.sort]: 1 } : { createdAt: -1 };
@@ -201,58 +142,6 @@ const getTour = async (req, res) => {
       status: "success",
       data: {
         tour,
-        seatInfo: tour.seatInfo,
-      },
-    });
-  } catch (err) {
-    res.status(400).json({
-      status: "fail",
-      message: err.message,
-    });
-  }
-};
-
-// Check tour availability
-const checkTourAvailability = async (req, res) => {
-  try {
-    const { tourId, requiredSeats } = req.query;
-
-    if (!tourId || !requiredSeats) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Tour ID and required seats are required",
-      });
-    }
-
-    const tour = await Tour.findOne({
-      _id: tourId,
-      isActive: true,
-      isDeleted: false,
-    }).select("title groupSize bookedSeats availableSeats");
-
-    if (!tour) {
-      return res.status(404).json({
-        status: "fail",
-        message: "Active tour not found",
-      });
-    }
-
-    const seatsNeeded = parseInt(requiredSeats);
-    const isAvailable = tour.availableSeats >= seatsNeeded;
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        tourId: tour._id,
-        tourTitle: tour.title,
-        totalSeats: tour.groupSize,
-        bookedSeats: tour.bookedSeats,
-        availableSeats: tour.availableSeats,
-        requiredSeats: seatsNeeded,
-        isAvailable,
-        message: isAvailable
-          ? `${seatsNeeded} seats are available for booking`
-          : `Only ${tour.availableSeats} seats available (${seatsNeeded} needed)`,
       },
     });
   } catch (err) {
@@ -310,8 +199,7 @@ const createTour = async (req, res) => {
     const newTourData = {
       ...tourData,
       images,
-      groupSize: parseInt(tourData.groupSize) || 1,
-      bookedSeats: 0,
+      remaining_seats: parseInt(tourData.remaining_seats) || 0,
       featured: parseBool(tourData.featured),
       rating: tourData.rating ? parseFloat(tourData.rating) : 4.8,
       isActive: tourData.isActive !== false,
@@ -340,7 +228,6 @@ const createTour = async (req, res) => {
       status: "success",
       data: {
         tour: newTour,
-        seatInfo: newTour.seatInfo,
       },
     });
   } catch (err) {
@@ -397,16 +284,8 @@ const updateTour = async (req, res) => {
       updateData.priceTiers = parsedPriceTiers;
     }
 
-    // Handle groupSize
-    if (updateData.groupSize && typeof updateData.groupSize === "string") {
-      updateData.groupSize = parseInt(updateData.groupSize);
-
-      if (updateData.groupSize < existingTour.bookedSeats) {
-        return res.status(400).json({
-          status: "fail",
-          message: `Cannot reduce group size below ${existingTour.bookedSeats} (currently booked seats)`,
-        });
-      }
+    if (tourData.remaining_seats !== undefined) {
+        updateData.remaining_seats = parseInt(tourData.remaining_seats);
     }
 
     updateData.featured = parseBool(tourData.featured);
@@ -442,17 +321,6 @@ const updateTour = async (req, res) => {
       }
     }
 
-    // IMPORTANT: Don't let bookedSeats exceed groupSize
-    if (
-      updateData.groupSize &&
-      updateData.groupSize < existingTour.bookedSeats
-    ) {
-      return res.status(400).json({
-        status: "fail",
-        message: `Cannot reduce group size below ${existingTour.bookedSeats} (currently booked seats)`,
-      });
-    }
-
     // Update tour
     const updatedTour = await Tour.findByIdAndUpdate(id, updateData, {
       new: true,
@@ -463,7 +331,6 @@ const updateTour = async (req, res) => {
       status: "success",
       data: {
         tour: updatedTour,
-        seatInfo: updatedTour.seatInfo,
       },
     });
   } catch (err) {
@@ -540,10 +407,7 @@ module.exports = {
   getAllTours,
   getTour,
   getFeaturedTours,
-  checkTourAvailability,
   createTour,
   updateTour,
   deleteTour,
-  updateTourSeatsHelper: updateTourSeats,
-  releaseTourSeatsHelper: releaseTourSeats,
 };

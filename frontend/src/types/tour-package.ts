@@ -15,22 +15,15 @@ export interface TourPackage {
   endDate: string;
   images: string[];  
   duration: string;
-  groupSize: number;
   priceTiers: PriceTier[];
   originalPrice?: number;
   rating: number;
   highlights: HighlightItem[]; 
   featured: boolean;
-  bookedSeats: number;
-  availableSeats: number;
+  remaining_seats: number;
   isActive: boolean;
   isDeleted: boolean;
   deletedAt?: string;
-  seatInfo?: {
-    totalSeats: number;
-    bookedSeats: number;
-    availableSeats: number;
-  };
   createdAt: string;
   updatedAt: string;
 }
@@ -50,7 +43,7 @@ export interface CreateTourPackageDto {
   startDate: string;
   endDate: string;
   duration: string;
-  groupSize: number;
+  remaining_seats: number;
   priceTiers: PriceTier[];
   isActive?: boolean;
   originalPrice?: number;
@@ -88,11 +81,6 @@ export interface TourPackageResponse {
   status: 'success' | 'fail';
   data?: {
     tour?: TourPackage;
-    seatInfo?: {
-      totalSeats: number;
-      bookedSeats: number;
-      availableSeats: number;
-    };
   };
   message?: string;
 }

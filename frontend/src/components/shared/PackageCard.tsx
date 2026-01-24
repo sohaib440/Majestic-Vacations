@@ -141,34 +141,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      <Calendar className="h-4 w-4" />
                      {tour.duration}
                   </span>
-                  <span className="flex items-center gap-1">
-                     <Users className="h-4 w-4" />
-                     Group: {tour.groupSize}
-                  </span>
                </div>
-
-               {/* Seat availability progress bar */}
-               {tour.groupSize > 0 && (
-                  <div className="mb-4">
-                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                        <span>Seats: {tour.availableSeats} / {tour.groupSize} available</span>
-                        <span>{Math.round((tour.bookedSeats / tour.groupSize) * 100)}% booked</span>
-                     </div>
-                     <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                           className={`h-1.5 rounded-full ${tour.availableSeats === 0
-                              ? 'bg-red-500'
-                              : tour.availableSeats <= 3
-                                 ? 'bg-yellow-500'
-                                 : 'bg-green-500'
-                              }`}
-                           style={{
-                              width: `${Math.min(100, (tour.bookedSeats / tour.groupSize) * 100)}%`
-                           }}
-                        />
-                     </div>
-                  </div>
-               )}
 
                {tour.highlights && tour.highlights.length > 0 && (
                   <ul className="space-y-1 mb-4">

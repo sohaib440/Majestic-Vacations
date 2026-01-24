@@ -11,7 +11,7 @@ interface CurrencyPriceProps {
 }
 
 export const CurrencyPrice: React.FC<CurrencyPriceProps> = ({
-   amount,
+   amount = 0,
    className = '',
    showOriginal = false,
    showSymbol = true,
@@ -19,13 +19,15 @@ export const CurrencyPrice: React.FC<CurrencyPriceProps> = ({
 }) => {
    const { currentCurrency, convertFromUSD, format } = useCurrency();
 
+   const safeAmount = Number(amount || 0);
+
    // Convert price from USD to current currency
-   const convertedAmount = convertFromUSD(amount);
+   const convertedAmount = convertFromUSD(safeAmount);
    const formattedPrice = format(convertedAmount, currentCurrency);
 
    // For USD, show simple format without currency code
    const displayPrice = currentCurrency === 'USD'
-      ? `$${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+      ? `$${safeAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
       : formattedPrice.replace(currentCurrency, '').trim();
 
    // Compact variant for cards

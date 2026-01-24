@@ -166,8 +166,9 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   <Button
                      className="bg-primary hover:bg-primary/90"
                         onClick={() => navigate(`/booking/create?tourId=${tour._id}`)}
+                        disabled={tour.remaining_seats === 0}
                   >
-                     Book Now
+                     {tour.remaining_seats > 0 ? 'Book Now' : 'Booking Closed'}
                   </Button>
                </div>
             )}
@@ -316,16 +317,6 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
                      <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                           <Users className="h-4 w-4 text-green-500" />
-                           <span className="text-sm">Group Size</span>
-                        </div>
-                        <span className="font-medium">{tour.groupSize}</span>
-                     </div>
-
-                     <Separator />
-
-                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
                            <Star className="h-4 w-4 text-yellow-500" />
                            <span className="text-sm">Rating</span>
                         </div>
@@ -347,44 +338,14 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
                      <Separator />
 
-                     <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                           <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-blue-500" />
-                              <span className="text-sm">Seat Availability</span>
-                           </div>
-                           <span className={`text-sm font-medium ${tour.availableSeats === 0 ? 'text-red-600' : 'text-green-600'}`}>
-                              {tour.availableSeats} / {tour.groupSize} available
-                           </span>
+                     <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                           <Users className="h-4 w-4 text-green-500" />
+                           <span className="text-sm">Remaining Seats</span>
                         </div>
-
-                        {/* Progress Bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                           <div
-                              className={`h-2 rounded-full ${tour.availableSeats === 0 ? 'bg-red-500' : 'bg-green-500'}`}
-                              style={{
-                                 width: `${Math.min(100, (tour.bookedSeats / tour.groupSize) * 100)}%`
-                              }}
-                           />
-                        </div>
-
-                        {/* Detailed breakdown (optional) */}
-                        <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                           <div className="text-center">
-                              <div className="font-medium">{tour.groupSize}</div>
-                              <div>Total Seats</div>
-                           </div>
-                           <div className="text-center">
-                              <div className="font-medium">{tour.bookedSeats}</div>
-                              <div>Booked</div>
-                           </div>
-                           <div className="text-center">
-                              <div className={`font-medium ${tour.availableSeats === 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                 {tour.availableSeats}
-                              </div>
-                              <div>Available</div>
-                           </div>
-                        </div>
+                        <span className={`font-medium ${tour.remaining_seats > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                           {tour.remaining_seats > 0 ? tour.remaining_seats : 'Booking Closed'}
+                        </span>
                      </div>
                   </CardContent>
                </Card>
@@ -419,8 +380,9 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                                              <Button
                                                 className="w-full bg-primary hover:bg-primary/90 h-12 text-lg"
                                                 onClick={() => navigate(`/booking/create?tourId=${tour._id}`)}
+                                                disabled={tour.remaining_seats === 0}
                                              >
-                                                Book This Tour
+                                                {tour.remaining_seats > 0 ? 'Book This Tour' : 'Booking Closed'}
                                              </Button>
                                           ) : (
                                              <div className="bg-blue-50 p-3 rounded-lg">
@@ -459,7 +421,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                            variant="outline"
                            className="w-full justify-start"
                            onClick={() => {
-                              window.open(`/tours/${tour._id}`, '_blank');
+                              window.open(`/packages/${tour._id}`, '_blank');
                            }}
                         >
                            <Eye className="mr-2 h-4 w-4" />

@@ -51,7 +51,8 @@ const tourSchema = z.object({
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   duration: z.string().min(1),
-  groupSize: z.number().min(1),
+  remaining_seats: z.number().min(0, "Remaining seats cannot be negative"),
+
   priceTiers: z
     .array(
       z.object({
@@ -122,7 +123,8 @@ const TourForm: React.FC<TourFormProps> = ({
       startDate: initialData?.startDate || "", // Changed from date
       endDate: initialData?.endDate || "",
       duration: initialData?.duration || "",
-      groupSize: initialData?.groupSize || 1,
+      remaining_seats: initialData?.remaining_seats || 0,
+
       priceTiers: initialData?.priceTiers || [{ ageGroup: "Adult", ageRange: "12+", price: 0 }],
       rating: initialData?.rating || 4.8,
       highlights: initialData?.highlights || [],
@@ -467,17 +469,17 @@ const TourForm: React.FC<TourFormProps> = ({
 
               <FormField
                 control={form.control}
-                name="groupSize"
+                name="remaining_seats"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Group Size *</FormLabel>
+                    <FormLabel>Remaining Seats *</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        min="1"
+                        min="0"
                         {...field}
                         onChange={(e) =>
-                          field.onChange(parseInt(e.target.value) || 1)
+                          field.onChange(parseInt(e.target.value) || 0)
                         }
                       />
                     </FormControl>
@@ -485,6 +487,8 @@ const TourForm: React.FC<TourFormProps> = ({
                   </FormItem>
                 )}
               />
+
+
             </div>
           </CardContent>
         </Card>
