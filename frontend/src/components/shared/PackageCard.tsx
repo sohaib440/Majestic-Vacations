@@ -54,7 +54,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
          return { text: 'Sold Out', color: 'bg-red-500 hover:bg-red-600', show: true };
       } else if (tour.availableSeats <= 3) {
          return { text: `Only ${tour.availableSeats} left`, color: 'bg-yellow-500 hover:bg-yellow-600', show: true };
-      } else if (tour.availableSeats <= Math.floor(tour.groupSize * 0.3)) {
+      } else if (tour.availableSeats <= 5) { // Fixed threshold for 'Limited Seats'
          return { text: `Limited Seats`, color: 'bg-orange-500 hover:bg-orange-600', show: true };
       }
       return { text: '', color: '', show: false };
@@ -157,20 +157,25 @@ const PackageCard: React.FC<PackageCardProps> = ({
             
             <CardFooter className="p-5 pt-0 flex items-end justify-between">
                <div>
-                  {tour.originalPrice && tour.originalPrice > tour.price && (
-                     <p className="text-sm text-muted-foreground line-through">
+                  {tour.priceTiers && tour.priceTiers.length > 0 && (
+                     <>
+                        {tour.originalPrice && tour.originalPrice > tour.priceTiers[0].price && (
+                           <p className="text-sm text-muted-foreground line-through">
+                              <CurrencyPrice
+                                 amount={tour.originalPrice}
+                                 variant="compact"
+                                 showSymbol={false}
+                              />
+                           </p>
+                        )}
+                        <p className="text-sm text-muted-foreground">From</p>
                         <CurrencyPrice
-                           amount={tour.originalPrice}
+                           amount={tour.priceTiers.reduce((min, tier) => Math.min(min, tier.price), Infinity)}
                            variant="compact"
-                           showSymbol={false}
+                           className="text-primary text-lg font-bold"
                         />
-                     </p>
+                     </>
                   )}
-                  <CurrencyPrice
-                     amount={tour.price}
-                     variant="compact"
-                     className="text-primary"
-                  />
                </div>
                <Button
                   onClick={handleBooking}

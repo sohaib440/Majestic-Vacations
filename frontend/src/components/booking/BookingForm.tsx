@@ -179,38 +179,40 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   }, [selectedTour, participants, form]);
 
 useEffect(() => {
-  if (selectedTourId) {
-    const tour = tours.find(t => t._id === selectedTourId);
-    setSelectedTour(tour || null);
-
-    // If a tour is selected, and it has price tiers, ensure participants are aligned
-    if (tour && tour.priceTiers && tour.priceTiers.length > 0) {
-      const currentFormParticipants = form.getValues('participants');
-      const currentParticipantAgeGroups = currentFormParticipants.map(p => p.ageGroup);
-      const tourPriceTierAgeGroups = tour.priceTiers.map(pt => pt.ageGroup);
-
-      const needsUpdate =
-        currentParticipantAgeGroups.length !== tourPriceTierAgeGroups.length ||
-        !currentParticipantAgeGroups.every(ag => tourPriceTierAgeGroups.includes(ag));
-
-      if (needsUpdate) {
-        form.setValue(
-          'participants',
-          tour.priceTiers.map(tier => {
-            const existingParticipant = currentFormParticipants.find(p => p.ageGroup === tier.ageGroup);
-            return {
-              ageGroup: tier.ageGroup,
-              count: existingParticipant ? existingParticipant.count : 0,
-            };
-          })
-        );
+    if (selectedTourId) {
+      const tour = tours.find(t => t._id === selectedTourId);
+      // Only update selectedTour if it's actually different to prevent infinite loops
+      if (tour?._id !== selectedTour?._id) {
+        setSelectedTour(tour || null);
       }
-    } else {
-      form.setValue('participants', []); // Clear if no price tiers
-    }
-  }
-}, [selectedTourId, tours, form]);
 
+      // If a tour is selected, and it has price tiers, ensure participants are aligned
+      if (tour && tour.priceTiers && tour.priceTiers.length > 0) {
+        const currentFormParticipants = form.getValues('participants');
+        const currentParticipantAgeGroups = currentFormParticipants.map(p => p.ageGroup);
+        const tourPriceTierAgeGroups = tour.priceTiers.map(pt => pt.ageGroup);
+
+        const needsUpdate =
+          currentParticipantAgeGroups.length !== tourPriceTierAgeGroups.length ||
+          !currentParticipantAgeGroups.every(ag => tourPriceTierAgeGroups.includes(ag));
+
+        if (needsUpdate) {
+          form.setValue(
+            'participants',
+            tour.priceTiers.map(tier => {
+              const existingParticipant = currentFormParticipants.find(p => p.ageGroup === tier.ageGroup);
+              return {
+                ageGroup: tier.ageGroup,
+                count: existingParticipant ? existingParticipant.count : 0,
+              };
+            })
+          );
+        }
+      } else {
+        form.setValue('participants', []); // Clear if no price tiers
+      }
+    }
+  }, [selectedTourId, tours, form, selectedTour]); // Added selectedTour to dependencies
 const onSubmit = async (values: BookingFormValues) => {
   // Create a deep copy to avoid mutating the original form state
   const valuesInUSD = JSON.parse(JSON.stringify(values));
@@ -468,9 +470,9 @@ return (
           <div className="p-5 bg-muted/40 rounded-lg border">
             <div className="flex flex-wrap justify-between items-center gap-4">
               <div>
-                <p className="text-xl font-bold">
+                <div className="text-xl font-bold">
                   Total: <CurrencyPrice amount={calculateTotalAmount()} variant="detail" />
-                </p>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {totalParticipants} participants
                 </p>
@@ -504,9 +506,9 @@ return (
                     <div className="border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors" onClick={() => field.onChange("full")}>
                       <div className="flex items-center space-x-3">
                         <RadioGroupItem value="full" id="full" />
-                        <Label htmlFor="full" className="cursor-pointer font-medium">
+                        <div className="cursor-pointer font-medium">
                           Pay in Full <CurrencyPrice amount={calculateTotalAmount()} variant="compact" />
-                        </Label>
+                        </div>
                       </div>
                     </div>
 
@@ -514,9 +516,9 @@ return (
                       <div className="border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors" onClick={() => field.onChange("monthly")}>
                         <div className="flex items-center space-x-3">
                           <RadioGroupItem value="monthly" id="monthly" />
-                          <Label htmlFor="monthly" className="cursor-pointer font-medium">
+                        <div className="cursor-pointer font-medium">
                             Monthly Installments ({selectedTour.monthlyPaymentInfo.monthsRequired} months)
-                          </Label>
+                        </div>
                         </div>
                       </div>
                     )}

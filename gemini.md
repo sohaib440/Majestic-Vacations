@@ -70,3 +70,257 @@ To ensure clarity and maintain code quality, we will follow a structured process
         *   `BookingsList.tsx`: (Admin/User) A table to view and manage bookings.
         *   `frontend/src/pages/admin/bookings/BookingSuccess.tsx`: Page to handle successful payment redirection and booking confirmation.
         *   `frontend/src/pages/admin/bookings/BookingCancel.tsx`: Page to handle cancelled payment redirection.
+
+
+folder structure 
+├── backend
+│   ├── config
+│   │   ├── database.js
+│   │   └── multer.js
+│   ├── controllers
+│   │   ├── authController.js
+│   │   ├── bookingController.js
+│   │   ├── inquiry.controller.js
+│   │   ├── payment.controller.js
+│   │   ├── tourPackage.controller.js
+│   │   └── userController.js
+│   ├── middleware
+│   │   ├── audit.js
+│   │   ├── auth.js
+│   │   ├── errorHandler.js
+│   │   ├── permission.js
+│   │   └── role.js
+│   ├── models
+│   │   ├── Inquiry.model.js
+│   │   ├── User.js
+│   │   ├── booking.model.js
+│   │   ├── paymentSchema.js
+│   │   └── tourSchema.js
+│   ├── routes
+│   │   ├── auth.js
+│   │   ├── bookingRoutes.js
+│   │   ├── index.js
+│   │   ├── inquiry.route.js
+│   │   ├── payment.routes.js
+│   │   ├── tour.js
+│   │   └── users.js
+│   ├── utils
+│   │   ├── generateToken.js
+│   │   └── initializeAdmin.js
+│   ├── webhooks
+│   │   ├── paypalWebhook.js
+│   │   └── stripeWebhook.js
+│   ├── package-lock.json
+│   ├── package.json
+│   └── server.js
+├── frontend
+│   ├── public
+│   │   ├── favicon.ico
+│   │   ├── placeholder.svg
+│   │   └── robots.txt
+│   ├── src
+│   │   ├── Styles
+│   │   │   └── topAttraction.css
+│   │   ├── assets
+│   │   │   ├── about.jpg
+│   │   │   ├── contact.avif
+│   │   │   ├── logo.webp
+│   │   │   └── testimonial.jpg
+│   │   ├── components
+│   │   │   ├── booking
+│   │   │   │   ├── BookingForm.tsx
+│   │   │   │   └── BookingsList.tsx
+│   │   │   ├── destinations
+│   │   │   │   └── AnimatedDestinationPage.tsx
+│   │   │   ├── layout
+│   │   │   │   ├── Footer.tsx
+│   │   │   │   ├── Layout.tsx
+│   │   │   │   └── Navbar.tsx
+│   │   │   ├── payment
+│   │   │   │   ├── StripePaymentForm.tsx
+│   │   │   │   └── paymentPage.tsx
+│   │   │   ├── shared
+│   │   │   │   ├── currency
+│   │   │   │   │   ├── CurrencyDisplay.tsx
+│   │   │   │   │   ├── CurrencyPrice.tsx
+│   │   │   │   │   ├── CurrencySelector.tsx
+│   │   │   │   │   └── PriceDisplay.tsx
+│   │   │   │   ├── ContactForm.tsx
+│   │   │   │   ├── DestinationCard.tsx
+│   │   │   │   ├── DestinationPackagesSection.tsx
+│   │   │   │   ├── FeaturedPackagesSection.tsx
+│   │   │   │   ├── ImageCarousel.tsx
+│   │   │   │   ├── PackageCard.tsx
+│   │   │   │   ├── PackagesGrid.tsx
+│   │   │   │   ├── PhotoGallery.tsx
+│   │   │   │   ├── SectionHeading.tsx
+│   │   │   │   ├── TestimonialCard.tsx
+│   │   │   │   ├── TourDetailPage.tsx
+│   │   │   │   └── WhatsAppButton.tsx
+│   │   │   ├── textAnimations
+│   │   │   │   ├── CountUp.tsx
+│   │   │   │   ├── GradientText.tsx
+│   │   │   │   ├── RotatingText.tsx
+│   │   │   │   ├── ScrollRevealText.tsx
+│   │   │   │   ├── ShinyText.tsx
+│   │   │   │   ├── ShuffleText.tsx
+│   │   │   │   ├── SplitText.tsx
+│   │   │   │   ├── TextType.tsx
+│   │   │   │   └── index.ts
+│   │   │   ├── tour
+│   │   │   │   ├── admin
+│   │   │   │   │   └── TourForm.tsx
+│   │   │   │   └── TourFilter.tsx
+│   │   │   ├── ui
+│   │   │   │   ├── accordion.tsx
+│   │   │   │   ├── alert-dialog.tsx
+│   │   │   │   ├── alert.tsx
+│   │   │   │   ├── aspect-ratio.tsx
+│   │   │   │   ├── avatar.tsx
+│   │   │   │   ├── badge.tsx
+│   │   │   │   ├── breadcrumb.tsx
+│   │   │   │   ├── button.tsx
+│   │   │   │   ├── calendar.tsx
+│   │   │   │   ├── card.tsx
+│   │   │   │   ├── carousel.tsx
+│   │   │   │   ├── chart.tsx
+│   │   │   │   ├── checkbox.tsx
+│   │   │   │   ├── collapsible.tsx
+│   │   │   │   ├── command.tsx
+│   │   │   │   ├── context-menu.tsx
+│   │   │   │   ├── dialog.tsx
+│   │   │   │   ├── drawer.tsx
+│   │   │   │   ├── dropdown-menu.tsx
+│   │   │   │   ├── form.tsx
+│   │   │   │   ├── hover-card.tsx
+│   │   │   │   ├── input-otp.tsx
+│   │   │   │   ├── input.tsx
+│   │   │   │   ├── label.tsx
+│   │   │   │   ├── loading-spinner.tsx
+│   │   │   │   ├── menubar.tsx
+│   │   │   │   ├── navigation-menu.tsx
+│   │   │   │   ├── pagination.tsx
+│   │   │   │   ├── popover.tsx
+│   │   │   │   ├── progress.tsx
+│   │   │   │   ├── radio-group.tsx
+│   │   │   │   ├── resizable.tsx
+│   │   │   │   ├── scroll-area.tsx
+│   │   │   │   ├── select.tsx
+│   │   │   │   ├── separator.tsx
+│   │   │   │   ├── sheet.tsx
+│   │   │   │   ├── sidebar.tsx
+│   │   │   │   ├── skeleton.tsx
+│   │   │   │   ├── slider.tsx
+│   │   │   │   ├── sonner.tsx
+│   │   │   │   ├── switch.tsx
+│   │   │   │   ├── table.tsx
+│   │   │   │   ├── tabs.tsx
+│   │   │   │   ├── textarea.tsx
+│   │   │   │   ├── toast.tsx
+│   │   │   │   ├── toaster.tsx
+│   │   │   │   ├── toggle-group.tsx
+│   │   │   │   ├── toggle.tsx
+│   │   │   │   ├── tooltip.tsx
+│   │   │   │   └── use-toast.ts
+│   │   │   ├── NavLink.tsx
+│   │   │   └── ScrollToTop.tsx
+│   │   ├── contexts
+│   │   │   ├── AuthContext.tsx
+│   │   │   └── CurrencyContext.tsx
+│   │   ├── features
+│   │   │   ├── authApi.ts
+│   │   │   ├── bookingApi.ts
+│   │   │   ├── inquiryApi.ts
+│   │   │   └── tourPackageApi.ts
+│   │   ├── hooks
+│   │   │   ├── use-mobile.tsx
+│   │   │   ├── use-toast.ts
+│   │   │   ├── useAuth.ts
+│   │   │   └── useCurrency.ts
+│   │   ├── lib
+│   │   │   ├── api.ts
+│   │   │   ├── currency.ts
+│   │   │   ├── gsapAnimations.ts
+│   │   │   ├── image-utils.ts
+│   │   │   ├── tour-utils.ts
+│   │   │   └── utils.ts
+│   │   ├── pages
+│   │   │   ├── Home Section
+│   │   │   │   ├── Aboutus.tsx
+│   │   │   │   └── Carousel.tsx
+│   │   │   ├── Package
+│   │   │   │   ├── [id]
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── admin
+│   │   │   │   ├── bookings
+│   │   │   │   │   ├── [id]
+│   │   │   │   │   │   ├── edit
+│   │   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── create
+│   │   │   │   │   │   └── page.tsx
+│   │   │   │   │   ├── BookingCancel.tsx
+│   │   │   │   │   ├── BookingSuccess.tsx
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── customer
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── dashboard
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── inquiry
+│   │   │   │   │   └── inquiryPage.tsx
+│   │   │   │   ├── layout
+│   │   │   │   │   ├── Layout.tsx
+│   │   │   │   │   ├── Navbar.tsx
+│   │   │   │   │   └── Sidebar.tsx
+│   │   │   │   └── pakages
+│   │   │   │       ├── [id]
+│   │   │   │       │   ├── detail
+│   │   │   │       │   │   └── page.tsx
+│   │   │   │       │   └── edit
+│   │   │   │       │       └── page.tsx
+│   │   │   │       ├── create
+│   │   │   │       │   └── page.tsx
+│   │   │   │       └── page.tsx
+│   │   │   ├── auth
+│   │   │   │   └── Login.tsx
+│   │   │   ├── destinations
+│   │   │   │   ├── Dubai.tsx
+│   │   │   │   ├── Greece.tsx
+│   │   │   │   ├── Indonesia.tsx
+│   │   │   │   ├── Thailand.tsx
+│   │   │   │   └── Turkey.tsx
+│   │   │   ├── About.tsx
+│   │   │   ├── Contact.tsx
+│   │   │   ├── Index.tsx
+│   │   │   ├── NotFound.tsx
+│   │   │   └── Testimonials.tsx
+│   │   ├── providers
+│   │   │   └── CurrencyProvider.tsx
+│   │   ├── services
+│   │   │   └── currencyService.ts
+│   │   ├── types
+│   │   │   ├── booking.ts
+│   │   │   ├── index.ts
+│   │   │   └── tour-package.ts
+│   │   ├── App.css
+│   │   ├── App.tsx
+│   │   ├── index.css
+│   │   ├── main.tsx
+│   │   ├── protectedRoute.tsx
+│   │   └── vite-env.d.ts
+│   ├── .gitignore
+│   ├── README.md
+│   ├── components.json
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── tailwind.config.ts
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+├── .gitignore
+└── gemini.md

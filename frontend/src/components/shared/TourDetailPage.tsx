@@ -343,8 +343,18 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                            <Users className="h-4 w-4 text-green-500" />
                            <span className="text-sm">Remaining Seats</span>
                         </div>
-                        <span className={`font-medium ${tour.remaining_seats > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                           {tour.remaining_seats > 0 ? tour.remaining_seats : 'Booking Closed'}
+                        <span className={`font-medium ${tour.remaining_seats <= 5 && tour.remaining_seats > 0 ? 'text-orange-600' : tour.remaining_seats === 0 ? 'text-red-600' : 'text-green-600'}`}>
+                           {tour.remaining_seats === 0 ? (
+                              <span className="flex items-center gap-1">
+                                 <AlertTriangle className="h-4 w-4" /> Sold Out
+                              </span>
+                           ) : tour.remaining_seats <= 5 ? (
+                              <span className="flex items-center gap-1">
+                                 <AlertTriangle className="h-4 w-4" /> Only {tour.remaining_seats} left
+                              </span>
+                           ) : (
+                              `${tour.remaining_seats} available`
+                           )}
                         </span>
                      </div>
                   </CardContent>
@@ -368,7 +378,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                                                    <CurrencyPrice
                                                       amount={tier.price}
                                                       variant="detail"
-                                                      className={!isAdmin ? "text-primary" : "text-green-600"}
+                                                      className={`text-lg font-bold ${!isAdmin ? "text-primary" : "text-green-600"}`}
                                                    />
                                                 </div>
                                              ))}
