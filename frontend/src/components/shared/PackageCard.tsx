@@ -54,7 +54,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
          return { text: 'Sold Out', color: 'bg-red-500 hover:bg-red-600', show: true };
       } else if (tour.availableSeats <= 3) {
          return { text: `Only ${tour.availableSeats} left`, color: 'bg-yellow-500 hover:bg-yellow-600', show: true };
-      } else if (tour.availableSeats <= Math.floor(tour.groupSize * 0.3)) {
+      } else if (tour.availableSeats <= 5) { // Fixed threshold for 'Limited Seats'
          return { text: `Limited Seats`, color: 'bg-orange-500 hover:bg-orange-600', show: true };
       }
       return { text: '', color: '', show: false };
@@ -141,34 +141,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
                      <Calendar className="h-4 w-4" />
                      {tour.duration}
                   </span>
-                  <span className="flex items-center gap-1">
-                     <Users className="h-4 w-4" />
-                     Group: {tour.groupSize}
-                  </span>
                </div>
-
-               {/* Seat availability progress bar */}
-               {tour.groupSize > 0 && (
-                  <div className="mb-4">
-                     <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                        <span>Seats: {tour.availableSeats} / {tour.groupSize} available</span>
-                        <span>{Math.round((tour.bookedSeats / tour.groupSize) * 100)}% booked</span>
-                     </div>
-                     <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                           className={`h-1.5 rounded-full ${tour.availableSeats === 0
-                              ? 'bg-red-500'
-                              : tour.availableSeats <= 3
-                                 ? 'bg-yellow-500'
-                                 : 'bg-green-500'
-                              }`}
-                           style={{
-                              width: `${Math.min(100, (tour.bookedSeats / tour.groupSize) * 100)}%`
-                           }}
-                        />
-                     </div>
-                  </div>
-               )}
 
                {tour.highlights && tour.highlights.length > 0 && (
                   <ul className="space-y-1 mb-4">
@@ -184,20 +157,25 @@ const PackageCard: React.FC<PackageCardProps> = ({
             
             <CardFooter className="p-5 pt-0 flex items-end justify-between">
                <div>
-                  {tour.originalPrice && tour.originalPrice > tour.price && (
-                     <p className="text-sm text-muted-foreground line-through">
+                  {tour.priceTiers && tour.priceTiers.length > 0 && (
+                     <>
+                        {tour.originalPrice && tour.originalPrice > tour.priceTiers[0].price && (
+                           <p className="text-sm text-muted-foreground line-through">
+                              <CurrencyPrice
+                                 amount={tour.originalPrice}
+                                 variant="compact"
+                                 showSymbol={false}
+                              />
+                           </p>
+                        )}
+                        <p className="text-sm text-muted-foreground">From</p>
                         <CurrencyPrice
-                           amount={tour.originalPrice}
+                           amount={tour.priceTiers.reduce((min, tier) => Math.min(min, tier.price), Infinity)}
                            variant="compact"
-                           showSymbol={false}
+                           className="text-primary text-lg font-bold"
                         />
-                     </p>
+                     </>
                   )}
-                  <CurrencyPrice
-                     amount={tour.price}
-                     variant="compact"
-                     className="text-primary"
-                  />
                </div>
                <Button
                   onClick={handleBooking}

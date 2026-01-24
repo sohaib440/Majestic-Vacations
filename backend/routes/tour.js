@@ -13,9 +13,6 @@ router.route('/')
 router.route('/:id')
   .get(tourController.getTour);
 
-router.route('/check/availability')
-  .get(tourController.checkTourAvailability);
-
 // PROTECTED ADMIN ROUTES
 router.use(protect);
 router.route('/')

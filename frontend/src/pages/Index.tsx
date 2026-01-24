@@ -131,7 +131,7 @@ export default function Index() {
   return (
     <Layout>
       {/* Hero Section - Moved padding-top here instead of min-height calculation */}
-      <section className="relative py-44 flex items-center justify-center overflow-hidden">
+      <section className="relative py-40 flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <video
             ref={videoRef}

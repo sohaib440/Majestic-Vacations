@@ -24,7 +24,7 @@ export interface Booking {
       images: string[];
       price: number;
       pricePerMonth: number;
-      groupSize: number;
+
       bookedSeats: number;
       availableSeats: number;
       startDate: string;
@@ -33,7 +33,7 @@ export interface Booking {
    bookingStatus: 'pending' | 'confirmed' | 'cancelled' | 'completed';
    bookingReference: string;
    customerInfo: CustomerInfo;
-   seatsBooked: number;
+
    pricing: Pricing;
    paymentStatus: 'unpaid' | 'partial' | 'paid' | 'failed';
    adminNotes?: string;
@@ -50,8 +50,10 @@ export interface CreateBookingDto {
       phone: string;
       nationality?: string;
       passportNumber?: string;
-   };
-   seatsBooked: number;
+   participants: Array<{
+      ageGroup: string;
+      count: number;
+   }>;
    pricing: {
       totalAmount: number;
       currency: string;
@@ -126,7 +128,7 @@ export interface TourForBooking {
    country: string;
    price: number;
    pricePerMonth: number;
-   groupSize: number;
+
    bookedSeats: number;
    availableSeats: number;
    startDate: string;

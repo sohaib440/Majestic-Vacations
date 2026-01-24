@@ -1,5 +1,11 @@
 // src/types/tour-package.ts
 // Main tour package as returned from the API
+
+export interface PriceTier {
+  ageGroup: string;
+  ageRange: string;
+  price: number;
+}
 export interface TourPackage {
   _id: string;
   title: string;
@@ -9,29 +15,15 @@ export interface TourPackage {
   endDate: string;
   images: string[];  
   duration: string;
-  groupSize: number;
-  price: number;
-  pricePerMonth: number;  
+  priceTiers: PriceTier[];
   originalPrice?: number;
   rating: number;
   highlights: HighlightItem[]; 
   featured: boolean;
-  bookedSeats: number;
-  availableSeats: number;
+  remaining_seats: number;
   isActive: boolean;
   isDeleted: boolean;
   deletedAt?: string;
-  seatInfo?: {
-    totalSeats: number;
-    bookedSeats: number;
-    availableSeats: number;
-  };
-  monthlyPaymentInfo?: {
-    totalPrice: number;
-    monthlyPrice: number;
-    monthsRequired: number;
-    lastPayment: number;
-  };
   createdAt: string;
   updatedAt: string;
 }
@@ -51,9 +43,8 @@ export interface CreateTourPackageDto {
   startDate: string;
   endDate: string;
   duration: string;
-  groupSize: number;
-  price: number;
-  pricePerMonth: number; 
+  remaining_seats: number;
+  priceTiers: PriceTier[];
   isActive?: boolean;
   originalPrice?: number;
   rating?: number;
@@ -79,8 +70,6 @@ export interface TourPackageFilters {
   availableOnly?: boolean;
   minPrice?: number;
   maxPrice?: number;
-  minMonthlyPrice?: number;
-  maxMonthlyPrice?: number;
   isActive?: boolean;
   isDeleted?: boolean;
   includeDeleted?: boolean;
@@ -92,17 +81,6 @@ export interface TourPackageResponse {
   status: 'success' | 'fail';
   data?: {
     tour?: TourPackage;
-    seatInfo?: {
-      totalSeats: number;
-      bookedSeats: number;
-      availableSeats: number;
-    };
-    monthlyPaymentInfo?: {
-      totalPrice: number;
-      monthlyPrice: number;
-      monthsRequired: number;
-      lastPayment: number;
-    };
   };
   message?: string;
 }
