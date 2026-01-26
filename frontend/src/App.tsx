@@ -35,6 +35,9 @@ import EditBookingPage from "./pages/admin/bookings/[id]/edit/page";
 import PaymentPage from "./components/payment/paymentPage";
 import BookingCancel from "./pages/admin/bookings/BookingCancel";
 import BookingSuccess from "./pages/admin/bookings/BookingSuccess";
+import TestimonialsPage from "./pages/admin/testimonial/page";
+import CreateTestimonialPage from "./pages/admin/testimonial/create/page";
+import EditTestimonialPage from "./pages/admin/testimonial/edit/page";
 import { Layout } from "@/components/layout/Layout";
 import CustomersPage from "./pages/admin/customer/page";
 
@@ -101,6 +104,11 @@ const App = () => (
 
                 {/* Inquiry Management */}
                 <Route path="inquiry" element={<InquiryPage />} />
+
+                {/* Testimonials Management */}
+                <Route path="testimonial" element={<TestimonialsPage />} />
+                <Route path="testimonial/create" element={<CreateTestimonialPage />} />
+                <Route path="testimonial/:id/edit" element={<EditTestimonialPage />} />
               </Route>
 
               {/* 404 route */}

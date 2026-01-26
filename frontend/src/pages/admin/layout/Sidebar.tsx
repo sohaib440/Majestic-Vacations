@@ -24,7 +24,7 @@ export const navItems: NavItem[] = [
   { name: "Inquiry", path: "/admin/inquiry", icon: HelpCircle },
   { name: "Customers", path: "/admin/customers", icon: Users },
   { name: "Bookings", path: "/admin/bookings", icon: FileText },
-  { name: "Testimonials", path: "/admin/testimonials", icon: MessageSquare },
+  { name: "Testimonials", path: "/admin/testimonial", icon: MessageSquare },
 ];
 
 const AdminSidebar: React.FC = () => {

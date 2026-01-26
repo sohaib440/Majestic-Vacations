@@ -7,8 +7,9 @@ const { v4: uuidv4 } = require("uuid");
 // Ensure upload directories exist
 const tourPackagesDir = "uploads/tour-packages";
 const tourHighlightsDir = "uploads/tour-highlights";
+const testimonialsDir = "uploads/testimonials";
 
-[tourPackagesDir, tourHighlightsDir].forEach(dir => {
+[tourPackagesDir, tourHighlightsDir, testimonialsDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -22,6 +23,8 @@ const storage = multer.diskStorage({
       cb(null, tourPackagesDir);
     } else if (file.fieldname === 'highlightMedia') {
       cb(null, tourHighlightsDir);
+    } else if (file.fieldname === 'media') {
+      cb(null, testimonialsDir);
     } else {
       cb(null, 'uploads/');
     }
@@ -32,29 +35,14 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter - allow only images and videos for highlights
+// File filter - allow all image and video types
 const fileFilter = (req, file, cb) => {
-  // Allowed file types
-  const allowedImageTypes = /jpeg|jpg|png|gif|webp|svg/;
-  const allowedVideoTypes = /mp4|mov|avi|wmv|flv|mkv/;
-
-  const extname = path.extname(file.originalname).toLowerCase().replace('.', '');
-
-  // Check field name to determine allowed types
-  if (file.fieldname === 'images' || file.fieldname === 'image') {
-    // Only images for tour packages
-    if (allowedImageTypes.test(extname) && file.mimetype.startsWith('image/')) {
-      return cb(null, true);
-    }
-  } else if (file.fieldname === 'highlightMedia') {
-    // Both images and videos for highlights
-    if ((allowedImageTypes.test(extname) && file.mimetype.startsWith('image/')) ||
-      (allowedVideoTypes.test(extname) && file.mimetype.startsWith('video/'))) {
-      return cb(null, true);
-    }
+  // Accept all image and video MIME types
+  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    return cb(null, true);
   }
 
-  cb(new Error(`Invalid file type for ${file.fieldname}. Allowed: images (for tours) or images/videos (for highlights)`));
+  cb(new Error(`Invalid file type for ${file.fieldname}. Only images and videos are allowed.`));
 };
 
 // Multer instance
@@ -75,8 +63,14 @@ const uploadTourImages = upload.fields([
 // Single image upload (backward compatibility)
 const uploadSingleTourImage = upload.single('image');
 
+// Testimonial media upload
+const uploadTestimonialMedia = upload.fields([
+  { name: 'media', maxCount: 10 } // Multiple testimonial media files
+]);
+
 module.exports = {
   uploadTourImages,
   uploadSingleTourImage,
+  uploadTestimonialMedia,
   storage,
 };

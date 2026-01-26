@@ -63,6 +63,7 @@ app.use(xss());
 
 /*    8️⃣ STATIC FILES */
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /*    9️⃣ OTHER WEBHOOKS (NOT STRIPE) */
 app.use("/webhooks/paypal", paypalWebhookRouter);
