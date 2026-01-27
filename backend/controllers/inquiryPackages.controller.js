@@ -10,7 +10,7 @@ exports.createPackageInquiry = async (req, res) => {
   try {
     const { packageName, packageDescription, location, packageAveragePrice } = req.body;
     const userId = req.user.id;
-
+console.log('Request Body:', req.body);
     // Validation
     if (!packageName) {
       return res.status(400).json({ error: 'Package name is required' });

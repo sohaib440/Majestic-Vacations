@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Search, Plus, Edit, Trash2, Eye, Filter } from 'lucide-react';
-import { useGetAllPackageInquiries } from '@/features/packageInquiryApi';
+import { useGetAllPackageInquiries, useDeletePackageInquiry } from '@/features/packageInquiryApi';
 import { formatPrice } from '@/lib/tour-utils';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { toast } from '@/hooks/use-toast';
@@ -35,6 +35,7 @@ const AdminInquiryPackagesPage: React.FC = () => {
     searchInput,
     locationFilter
   );
+  const deleteInquiry = useDeletePackageInquiry();
 
   const handleSearch = () => {
     setFilters(prev => ({
@@ -52,7 +53,7 @@ const AdminInquiryPackagesPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this inquiry package?')) {
       try {
-        // TODO: Implement delete mutation when API is ready
+        await deleteInquiry.mutateAsync(id);
         toast({ title: 'Success', description: 'Inquiry package deleted successfully' });
         refetch();
       } catch (error: any) {
@@ -206,6 +207,7 @@ const AdminInquiryPackagesPage: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDelete(inquiry._id)}
+                        disabled={deleteInquiry.isPending}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -46,27 +46,27 @@ router.get('/:id', getPackageInquiryById);
 // PROTECTED ROUTES
 router.use(protect);
 
-// @route   POST /api/inquiry-packages
+// @route   POST /api/package-inquiries
 // @desc    Create a new package inquiry
 // @access  Private
-router.post('/', createPackageInquiry);
+router.post('/', uploadPackageMedia, createPackageInquiry);
 
-// @route   GET /api/inquiry-packages/user/:userId
+// @route   GET /api/package-inquiries/user/:userId
 // @desc    Get user's inquiries
 // @access  Private
 router.get('/user/:userId', getUserInquiries);
 
-// @route   PUT /api/inquiry-packages/:id
+// @route   PUT /api/package-inquiries/:id
 // @desc    Update package inquiry
 // @access  Private
-router.put('/:id', updatePackageInquiry);
-
-// @route   DELETE /api/inquiry-packages/:id/media/:mediaIndex
+router.put('/:id', uploadPackageMedia, updatePackageInquiry);
+s
+// @route   DELETE /api/package-inquiries/:id/media/:mediaIndex
 // @desc    Delete media from inquiry
 // @access  Private
 router.delete('/:id/media/:mediaIndex', deleteMedia);
 
-// @route   DELETE /api/inquiry-packages/:id
+// @route   DELETE /api/package-inquiries/:id
 // @desc    Delete package inquiry
 // @access  Private
 router.delete('/:id', deletePackageInquiry);
