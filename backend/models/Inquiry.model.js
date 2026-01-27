@@ -13,4 +13,4 @@ const inquirySchema = new mongoose.Schema(
 
 const Inquiry = mongoose.model("Inquiry", inquirySchema);
 
-module.exports = Inquiry; // ✅ CommonJS export
+module.exports = Inquiry; 
