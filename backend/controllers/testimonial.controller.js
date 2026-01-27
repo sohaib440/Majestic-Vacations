@@ -17,7 +17,13 @@ const createTestimonial = async (req, res) => {
       });
     }
 
-    // Handle media files
+    // Handle user profile picture
+    let userProfilePic = null;
+    if (req.files && req.files.userProfilePic) {
+      userProfilePic = `/uploads/testimonials/user-pics/${req.files.userProfilePic[0].filename}`;
+    }
+
+    // Handle media files (gallery)
     const media = [];
 
     if (req.files && req.files.media) {
@@ -27,7 +33,7 @@ const createTestimonial = async (req, res) => {
         const fileType = file.mimetype.startsWith("image/") ? "image" : "video";
         media.push({
           type: fileType,
-          url: `/uploads/testimonials/${file.filename}`,
+          url: `/uploads/testimonials/media/${file.filename}`,
         });
       });
     }
@@ -39,6 +45,7 @@ const createTestimonial = async (req, res) => {
       company: company?.trim(),
       destination: destination?.trim(),
       tripType: tripType?.trim(),
+      userProfilePic,
       media,
     };
 
@@ -63,14 +70,22 @@ const createTestimonial = async (req, res) => {
     });
   } catch (error) {
     // Delete uploaded files on error
-    if (req.files && req.files.media) {
-      const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
-      mediaFiles.forEach((file) => {
-        const filePath = path.join("uploads/testimonials", file.filename);
+    if (req.files) {
+      if (req.files.userProfilePic) {
+        const filePath = path.join("uploads/testimonials/user-pics", req.files.userProfilePic[0].filename);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
-      });
+      }
+      if (req.files.media) {
+        const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
+        mediaFiles.forEach((file) => {
+          const filePath = path.join("uploads/testimonials/media", file.filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        });
+      }
     }
 
     res.status(500).json({ success: false, message: error.message });
@@ -133,14 +148,22 @@ const updateTestimonial = async (req, res) => {
 
     if (!testimonial) {
       // Delete uploaded files on error
-      if (req.files && req.files.media) {
-        const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
-        mediaFiles.forEach((file) => {
-          const filePath = path.join("uploads/testimonials", file.filename);
+      if (req.files) {
+        if (req.files.userProfilePic) {
+          const filePath = path.join("uploads/testimonials/user-pics", req.files.userProfilePic[0].filename);
           if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
           }
-        });
+        }
+        if (req.files.media) {
+          const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
+          mediaFiles.forEach((file) => {
+            const filePath = path.join("uploads/testimonials/media", file.filename);
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath);
+            }
+          });
+        }
       }
 
       return res
@@ -164,7 +187,19 @@ const updateTestimonial = async (req, res) => {
           : travelerLocation;
     }
 
-    // Handle new media files
+    // Handle user profile picture update
+    if (req.files && req.files.userProfilePic) {
+      // Delete old user profile pic if exists
+      if (testimonial.userProfilePic) {
+        const oldPicPath = `uploads${testimonial.userProfilePic}`;
+        if (fs.existsSync(oldPicPath)) {
+          fs.unlinkSync(oldPicPath);
+        }
+      }
+      testimonial.userProfilePic = `/uploads/testimonials/user-pics/${req.files.userProfilePic[0].filename}`;
+    }
+
+    // Handle new media files (gallery)
     if (req.files && req.files.media) {
       const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
 
@@ -172,7 +207,7 @@ const updateTestimonial = async (req, res) => {
         const fileType = file.mimetype.startsWith("image/") ? "image" : "video";
         testimonial.media.push({
           type: fileType,
-          url: `/uploads/testimonials/${file.filename}`,
+          url: `/uploads/testimonials/media/${file.filename}`,
         });
       });
     }
@@ -186,14 +221,22 @@ const updateTestimonial = async (req, res) => {
     });
   } catch (error) {
     // Delete uploaded files on error
-    if (req.files && req.files.media) {
-      const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
-      mediaFiles.forEach((file) => {
-        const filePath = path.join("uploads/testimonials", file.filename);
+    if (req.files) {
+      if (req.files.userProfilePic) {
+        const filePath = path.join("uploads/testimonials/user-pics", req.files.userProfilePic[0].filename);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
-      });
+      }
+      if (req.files.media) {
+        const mediaFiles = Array.isArray(req.files.media) ? req.files.media : [req.files.media];
+        mediaFiles.forEach((file) => {
+          const filePath = path.join("uploads/testimonials/media", file.filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        });
+      }
     }
 
     res.status(500).json({ success: false, message: error.message });

@@ -18,6 +18,7 @@ export interface Testimonial {
   destination?: string;
   tripType?: string;
   travelerLocation?: TravelerLocation;
+  userProfilePic?: string;
   media?: MediaItem[];
   isDeleted: boolean;
   deletedAt?: Date | null;

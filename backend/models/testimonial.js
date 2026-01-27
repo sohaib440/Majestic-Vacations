@@ -64,6 +64,11 @@ const testimonialSchema = new mongoose.Schema(
       trim: true, 
     },
 
+    userProfilePic: {
+      type: String,
+      trim: true,
+    },
+
     media: [mediaSchema], 
 
     isDeleted: {

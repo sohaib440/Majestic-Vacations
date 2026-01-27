@@ -11,6 +11,7 @@ const CreateTestimonialPage = () => {
   const navigate = useNavigate();
   const { mutate: createTestimonial } = useCreateTestimonial();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userProfilePic, setUserProfilePic] = useState<File | null>(null);
   const [mediaFiles, setMediaFiles] = useState<File[]>([]);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -41,6 +42,17 @@ const CreateTestimonialPage = () => {
         [name]: value,
       },
     }));
+  };
+
+  const handleUserProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUserProfilePic(file);
+    }
+  };
+
+  const removeUserProfilePic = () => {
+    setUserProfilePic(null);
   };
 
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +86,10 @@ const CreateTestimonialPage = () => {
     form.append('destination', formData.destination);
     form.append('tripType', formData.tripType);
     form.append('travelerLocation', JSON.stringify(formData.travelerLocation));
+
+    if (userProfilePic) {
+      form.append('userProfilePic', userProfilePic);
+    }
 
     mediaFiles.forEach((file) => {
       form.append('media', file);
@@ -123,6 +139,65 @@ const CreateTestimonialPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* User Profile Picture Upload - TOP SECTION */}
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <h2 className="text-lg font-semibold text-gray-900">User Profile Picture</h2>
+              <p className="text-sm text-gray-600 text-center">
+                This circular image will be displayed on the testimonial card
+              </p>
+              
+              {/* Circular Upload Box with Image */}
+              <div className="relative">
+                {userProfilePic ? (
+                  // Show image when uploaded
+                  <div className="relative w-40 h-40">
+                    <img
+                      src={URL.createObjectURL(userProfilePic)}
+                      alt="Profile Preview"
+                      className="w-40 h-40 object-cover rounded-full border-4 border-blue-400 shadow-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeUserProfilePic}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 shadow-md"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+
+                  </div>
+                ) : (
+                  // Show upload box when empty
+                  <label className="flex items-center justify-center w-40 h-40 border-4 border-dashed border-blue-300 rounded-full cursor-pointer bg-blue-50 hover:bg-blue-100 transition group">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg
+                        className="w-12 h-12 text-blue-400 mb-2 group-hover:scale-110 transition"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      <p className="text-xs text-gray-600 text-center px-4">Click to upload</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleUserProfilePicChange}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200" />
+
             {/* Name and Rating Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">

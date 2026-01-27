@@ -8,8 +8,10 @@ const { v4: uuidv4 } = require("uuid");
 const tourPackagesDir = "uploads/tour-packages";
 const tourHighlightsDir = "uploads/tour-highlights";
 const testimonialsDir = "uploads/testimonials";
+const testimonialUserPicsDir = "uploads/testimonials/user-pics";
+const testimonialMediaDir = "uploads/testimonials/media";
 
-[tourPackagesDir, tourHighlightsDir, testimonialsDir].forEach(dir => {
+[tourPackagesDir, tourHighlightsDir, testimonialsDir, testimonialUserPicsDir, testimonialMediaDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -23,8 +25,10 @@ const storage = multer.diskStorage({
       cb(null, tourPackagesDir);
     } else if (file.fieldname === 'highlightMedia') {
       cb(null, tourHighlightsDir);
+    } else if (file.fieldname === 'userProfilePic') {
+      cb(null, testimonialUserPicsDir);
     } else if (file.fieldname === 'media') {
-      cb(null, testimonialsDir);
+      cb(null, testimonialMediaDir);
     } else {
       cb(null, 'uploads/');
     }
@@ -65,7 +69,8 @@ const uploadSingleTourImage = upload.single('image');
 
 // Testimonial media upload
 const uploadTestimonialMedia = upload.fields([
-  { name: 'media', maxCount: 10 } // Multiple testimonial media files
+  { name: 'userProfilePic', maxCount: 1 }, // Single user profile picture
+  { name: 'media', maxCount: 10 } // Multiple testimonial media files (images/videos)
 ]);
 
 module.exports = {

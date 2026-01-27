@@ -229,6 +229,25 @@ const TestimonialPage = () => {
               </div>
             </CardHeader>
             <CardContent className="p-6 space-y-6 overflow-y-auto flex-1">
+              {/* User Profile Picture */}
+              {selectedTestimonial.userProfilePic && (
+                <div className="flex justify-center">
+                  <div className="text-center">
+                    <h4 className="font-semibold text-gray-900 mb-3">User Profile Picture</h4>
+                    <img
+                      src={getMediaUrl(selectedTestimonial.userProfilePic)}
+                      alt={`${selectedTestimonial.name}'s profile`}
+                      className="w-32 h-32 object-cover rounded-full border-4 border-blue-400 shadow-lg mx-auto"
+                      onError={(e) => {
+                        console.error('Profile image failed to load:', getMediaUrl(selectedTestimonial.userProfilePic));
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/128?text=No+Image';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Rating */}
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Rating</h4>

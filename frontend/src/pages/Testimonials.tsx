@@ -43,12 +43,13 @@ export default function Testimonials() {
           ? `${t.travelerLocation.city || ""}, ${t.travelerLocation.country || ""}`.trim()
           : "Unknown Location",
         avatar:
-          t.media?.find((m) => m.type === "image")?.url ||
+          t.userProfilePic ||
           "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
         rating: t.rating || 5,
         text: t.content,
         destination: t.destination || "Unknown Destination",
         company: t.company,
+        media: t.media || [],
       })),
     [testimonials]
   );

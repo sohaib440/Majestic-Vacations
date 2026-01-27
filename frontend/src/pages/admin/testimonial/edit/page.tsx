@@ -4,17 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, X } from 'lucide-react';
-import { useGetTestimonialById, useUpdateTestimonial } from '@/features/testimonialApi';
+import { useGetTestimonialById, useUpdateTestimonial, useDeleteTestimonialMedia } from '@/features/testimonialApi';
 import { toast } from '@/hooks/use-toast';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 
 const EditTestimonialPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { data: testimonial, isLoading } = useGetTestimonialById(id);
+  const { data: testimonial, isLoading, refetch } = useGetTestimonialById(id);
   const { mutate: updateTestimonial } = useUpdateTestimonial();
+  const { mutate: deleteMedia } = useDeleteTestimonialMedia();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [newUserProfilePic, setNewUserProfilePic] = useState<File | null>(null);
   const [newMediaFiles, setNewMediaFiles] = useState<File[]>([]);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -61,6 +63,17 @@ const EditTestimonialPage = () => {
     }));
   };
 
+  const handleNewUserProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setNewUserProfilePic(file);
+    }
+  };
+
+  const removeNewUserProfilePic = () => {
+    setNewUserProfilePic(null);
+  };
+
   const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []) as File[];
     setNewMediaFiles((prev) => [...prev, ...files]);
@@ -68,6 +81,30 @@ const EditTestimonialPage = () => {
 
   const removeNewMedia = (index: number) => {
     setNewMediaFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteExistingMedia = (mediaIndex: number) => {
+    if (window.confirm('Are you sure you want to delete this media? This action cannot be undone.')) {
+      deleteMedia(
+        { id: id!, mediaIndex },
+        {
+          onSuccess: () => {
+            toast({
+              title: 'Success',
+              description: 'Media deleted successfully',
+            });
+            refetch();
+          },
+          onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+            toast({
+              title: 'Error',
+              description: error?.response?.data?.message || 'Failed to delete media',
+              variant: 'destructive',
+            });
+          },
+        }
+      );
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -92,6 +129,10 @@ const EditTestimonialPage = () => {
     form.append('destination', formData.destination);
     form.append('tripType', formData.tripType);
     form.append('travelerLocation', JSON.stringify(formData.travelerLocation));
+
+    if (newUserProfilePic) {
+      form.append('userProfilePic', newUserProfilePic);
+    }
 
     newMediaFiles.forEach((file) => {
       form.append('media', file);
@@ -147,6 +188,98 @@ const EditTestimonialPage = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* User Profile Picture Section - TOP */}
+            <div className="flex flex-col items-center justify-center space-y-4 pb-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">User Profile Picture</h2>
+              
+              {/* Update Profile Picture */}
+              <div className="space-y-4 w-full flex flex-col items-center">
+                <p className="text-sm text-gray-600 text-center">
+                  {testimonial.userProfilePic && !newUserProfilePic ? 'Current picture or upload new' : 'Upload profile picture'}
+                </p>
+
+                {/* Circular Upload Box with Image */}
+                <div className="relative">
+                  {newUserProfilePic ? (
+                    // Show new uploaded image
+                    <div className="relative w-40 h-40">
+                      <img
+                        src={URL.createObjectURL(newUserProfilePic)}
+                        alt="New Profile Preview"
+                        className="w-40 h-40 object-cover rounded-full border-4 border-green-400 shadow-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeNewUserProfilePic}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 shadow-md"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : testimonial.userProfilePic ? (
+                    // Show current picture with upload option
+                    <label className="flex items-center justify-center w-40 h-40 border-4 border-dashed border-blue-300 rounded-full cursor-pointer bg-blue-50 hover:bg-blue-100 transition group relative overflow-hidden">
+                      <img
+                        src={testimonial.userProfilePic}
+                        alt="Current Profile"
+                        className="absolute inset-0 w-full h-full object-cover rounded-full"
+                      />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 transition">
+                        <div className="flex flex-col items-center justify-center">
+                          <svg
+                            className="w-8 h-8 text-white mb-1"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          <p className="text-xs text-white text-center px-2">Click to update</p>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleNewUserProfilePicChange}
+                        className="hidden"
+                      />
+                    </label>
+                  ) : (
+                    // Show upload box when no image exists
+                    <label className="flex items-center justify-center w-40 h-40 border-4 border-dashed border-blue-300 rounded-full cursor-pointer bg-blue-50 hover:bg-blue-100 transition group">
+                      <div className="flex flex-col items-center justify-center">
+                        <svg
+                          className="w-12 h-12 text-blue-400 mb-2 group-hover:scale-110 transition"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        <p className="text-xs text-gray-600 text-center px-4">Click to upload</p>
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleNewUserProfilePicChange}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Name and Rating Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -261,7 +394,7 @@ const EditTestimonialPage = () => {
                 </label>
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
                   {testimonial.media.map((media, idx) => (
-                    <div key={idx} className="relative">
+                    <div key={idx} className="relative group">
                       <button
                         type="button"
                         onClick={() => setSelectedMediaIndex(idx)}
@@ -290,6 +423,14 @@ const EditTestimonialPage = () => {
                             </div>
                           </div>
                         )}
+                      </button>
+                      {/* Delete button */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExistingMedia(idx)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 shadow-md opacity-0 group-hover:opacity-100 transition"
+                      >
+                        <X className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
