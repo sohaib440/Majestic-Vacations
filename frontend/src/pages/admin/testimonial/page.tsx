@@ -98,7 +98,7 @@ const TestimonialPage = () => {
           <h1 className="text-3xl font-bold tracking-tight">Testimonials</h1>
           <p className="text-muted-foreground">Manage all customer testimonials</p>
         </div>
-        <Button onClick={() => navigate('/admin/testimonial/create')} className="bg-amber-700 hover:bg-amber-800 text-white">
+        <Button onClick={() => navigate('/admin/testimonial/create')} className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
           <Plus className="mr-2 h-4 w-4" />
           Add Testimonial
         </Button>
@@ -364,7 +364,7 @@ const TestimonialPage = () => {
               <div className="flex gap-3 pt-4">
                 <Button
                   onClick={() => navigate(`/admin/testimonial/${selectedTestimonial._id}/edit`)}
-                  className="flex-1 bg-amber-700 hover:bg-amber-800 text-white"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 flex-1"
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Edit
