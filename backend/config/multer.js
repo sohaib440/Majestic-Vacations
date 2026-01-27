@@ -10,8 +10,9 @@ const tourHighlightsDir = "uploads/tour-highlights";
 const testimonialsDir = "uploads/testimonials";
 const testimonialUserPicsDir = "uploads/testimonials/user-pics";
 const testimonialMediaDir = "uploads/testimonials/media";
+const packageInquiriesDir = "uploads/package-inquiries";
 
-[tourPackagesDir, tourHighlightsDir, testimonialsDir, testimonialUserPicsDir, testimonialMediaDir].forEach(dir => {
+[tourPackagesDir, tourHighlightsDir, testimonialsDir, testimonialUserPicsDir, testimonialMediaDir, packageInquiriesDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -28,7 +29,14 @@ const storage = multer.diskStorage({
     } else if (file.fieldname === 'userProfilePic') {
       cb(null, testimonialUserPicsDir);
     } else if (file.fieldname === 'media') {
-      cb(null, testimonialMediaDir);
+      // Check route to determine if it's testimonial or package inquiry media
+      if (req.baseUrl.includes('testimonials')) {
+        cb(null, testimonialMediaDir);
+      } else if (req.baseUrl.includes('package-inquiries')) {
+        cb(null, packageInquiriesDir);
+      } else {
+        cb(null, 'uploads/');
+      }
     } else {
       cb(null, 'uploads/');
     }
@@ -73,9 +81,13 @@ const uploadTestimonialMedia = upload.fields([
   { name: 'media', maxCount: 10 } // Multiple testimonial media files (images/videos)
 ]);
 
+// Package inquiry media upload (allow multiple images/videos)
+const uploadPackageMedia = upload.array('media', 10);
+
 module.exports = {
   uploadTourImages,
   uploadSingleTourImage,
   uploadTestimonialMedia,
+  uploadPackageMedia,
   storage,
 };
