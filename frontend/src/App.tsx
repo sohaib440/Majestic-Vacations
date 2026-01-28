@@ -11,6 +11,7 @@ import Index from "./pages/Index";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Testimonials from "./pages/Testimonials";
+import PackageInquiries from "./pages/PackageInquiries";
 import Dubai from "./pages/destinations/Dubai";
 import Turkey from "./pages/destinations/Turkey";
 import Greece from "./pages/destinations/Greece";
@@ -40,7 +41,10 @@ import CreateTestimonialPage from "./pages/admin/testimonial/create/page";
 import EditTestimonialPage from "./pages/admin/testimonial/edit/page";
 import { Layout } from "@/components/layout/Layout";
 import CustomersPage from "./pages/admin/customer/page";
-
+import InquiryPackagesPage from './pages/admin/inquiryPackages/page';
+import CreateInquiryPackagePage from './pages/admin/inquiryPackages/create/page';
+import EditInquiryPackagePage from './pages/admin/inquiryPackages/[id]/edit/page';
+import InquiryPackageDetailPage from './pages/admin/inquiryPackages/[id]/detail/page'
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -62,6 +66,7 @@ const App = () => (
               <Route path="/booking/create" element={<Layout><CreateBookingPage /></Layout>} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/testimonials" element={<Testimonials />} />
+              <Route path="/package-inquiries" element={<PackageInquiries />} />
               <Route path="/destinations/dubai" element={<Dubai />} />
               <Route path="/destinations/turkey" element={<Turkey />} />
               <Route path="/destinations/greece" element={<Greece />} />
@@ -102,8 +107,16 @@ const App = () => (
                 {/* Customer Management */}
                 <Route path="customers" element={<CustomersPage />} />
 
+                {/* Inquiry Packages Management */}
+                <Route path="inquiry-packages" element={<InquiryPackagesPage />} />
+                <Route path="inquiry-packages/create" element={<CreateInquiryPackagePage />} />
+                <Route path="inquiry-packages/:id/edit" element={<EditInquiryPackagePage />} />
+                <Route path="inquiry-packages/:id" element={<InquiryPackageDetailPage />} />
+
                 {/* Inquiry Management */}
                 <Route path="inquiry" element={<InquiryPage />} />
+
+              
 
                 {/* Testimonials Management */}
                 <Route path="testimonial" element={<TestimonialsPage />} />

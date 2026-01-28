@@ -7,6 +7,7 @@ import {
   HelpCircle,
   FileText,
   MessageSquare,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +22,7 @@ interface NavItem {
 export const navItems: NavItem[] = [
   { name: "Dashboard", path: "/admin/dashboard", icon: Home },
   { name: "Packages", path: "/admin/packages", icon: Package },
+  { name: "Inquiry Packages", path: "/admin/inquiry-packages", icon: Briefcase },
   { name: "Inquiry", path: "/admin/inquiry", icon: HelpCircle },
   { name: "Customers", path: "/admin/customers", icon: Users },
   { name: "Bookings", path: "/admin/bookings", icon: FileText },
