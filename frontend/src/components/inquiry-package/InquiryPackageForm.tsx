@@ -19,7 +19,7 @@ import { X, Upload, Image as ImageIcon, Video } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CreatePackageInquiryDto, PackageInquiry, MediaItem } from '@/features/packageInquiryApi';
 
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const inquiryPackageSchema = z.object({
   packageName: z.string().min(3, 'Package name must be at least 3 characters').max(200),
@@ -255,7 +255,7 @@ const InquiryPackageForm: React.FC<InquiryPackageFormProps> = ({
                       </div>
                     ) : (
                       <img
-                        src={`${baseUrl}/${media.url}`}
+                        src={`${baseUrl}${media.url}`}
                         alt="existing-media"
                         className="w-full h-full object-cover"
                       />

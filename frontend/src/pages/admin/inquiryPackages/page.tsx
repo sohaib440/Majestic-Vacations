@@ -18,7 +18,7 @@ import { formatPrice } from '@/lib/tour-utils';
 import LoadingSpinner from '@/components/ui/loading-spinner';
 import { toast } from '@/hooks/use-toast';
 
-const baseUrl = import.meta.env.VITE_API_URL;
+const baseUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
 const AdminInquiryPackagesPage: React.FC = () => {
   const [filters, setFilters] = useState({
@@ -143,7 +143,6 @@ const AdminInquiryPackagesPage: React.FC = () => {
                 <TableHead>Package Name</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Average Price</TableHead>
-                <TableHead>Media Count</TableHead>
                 <TableHead>Created By</TableHead>
                 <TableHead>Created Date</TableHead>
                 <TableHead>Actions</TableHead>
@@ -157,7 +156,7 @@ const AdminInquiryPackagesPage: React.FC = () => {
                       {inquiry.media && inquiry.media.length > 0 && (
                         <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0">
                           <img
-                            src={`${baseUrl}/${inquiry.media[0].url}`}
+                            src={`${baseUrl}${inquiry.media[0].url}`}
                             alt={inquiry.packageName}
                             className="h-full w-full object-cover"
                             onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
@@ -180,11 +179,9 @@ const AdminInquiryPackagesPage: React.FC = () => {
                       ? formatPrice(inquiry.packageAveragePrice)
                       : 'N/A'}
                   </TableCell>
+                
                   <TableCell>
-                    <span className="text-sm">{inquiry.media?.length || 0} files</span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm">{inquiry.createdBy?.name || 'Unknown'}</span>
+                    <span className="text-sm">{inquiry.createdBy?.userName || 'Unknown'}</span>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm">

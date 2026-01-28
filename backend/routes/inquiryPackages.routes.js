@@ -16,29 +16,27 @@ const { uploadPackageMedia } = require('../config/multer');
 
 const router = express.Router();
 
-// PUBLIC ROUTES
-
-// @route   GET /api/package-inquiries/stats/overview
+// @route   GET /api/inquiry-packages/stats/overview
 // @desc    Get package statistics
 // @access  Public
 router.get('/stats/overview', getPackageStats);
 
-// @route   POST /api/package-inquiries/search
+// @route   POST /api/inquiry-packages/search
 // @desc    Search package inquiries
 // @access  Public
 router.post('/search', searchPackageInquiries);
 
-// @route   GET /api/package-inquiries/by-location/:location
+// @route   GET /api/inquiry-packages/by-location/:location
 // @desc    Get inquiries by location
 // @access  Public
 router.get('/by-location/:location', getByLocation);
 
-// @route   GET /api/package-inquiries
+// @route   GET /api/inquiry-packages
 // @desc    Get all package inquiries with filters
 // @access  Public
 router.get('/', getAllPackageInquiries);
 
-// @route   GET /api/package-inquiries/:id
+// @route   GET /api/inquiry-packages/:id
 // @desc    Get single inquiry
 // @access  Public
 router.get('/:id', getPackageInquiryById);
@@ -49,7 +47,7 @@ router.use(protect);
 // @route   POST /api/inquiry-packages
 // @desc    Create a new package inquiry
 // @access  Private
-router.post('/', createPackageInquiry);
+router.post('/', uploadPackageMedia, createPackageInquiry);
 
 // @route   GET /api/inquiry-packages/user/:userId
 // @desc    Get user's inquiries
@@ -59,7 +57,7 @@ router.get('/user/:userId', getUserInquiries);
 // @route   PUT /api/inquiry-packages/:id
 // @desc    Update package inquiry
 // @access  Private
-router.put('/:id', updatePackageInquiry);
+router.put('/:id', uploadPackageMedia, updatePackageInquiry);
 
 // @route   DELETE /api/inquiry-packages/:id/media/:mediaIndex
 // @desc    Delete media from inquiry

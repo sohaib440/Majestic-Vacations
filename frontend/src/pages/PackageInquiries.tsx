@@ -8,7 +8,7 @@ import PackageInquiriesBg from "@/assets/testimonial.jpg";
 import { useGetAllPackageInquiries, useGetPackageStats } from "@/features/packageInquiryApi";
 import { useMemo, useState } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL ;
 
 const getImageUrl = (imagePath: string | null | undefined): string => {
   if (!imagePath) {
@@ -151,7 +151,18 @@ export default function PackageInquiries() {
                     packageAveragePrice={inquiry.packageAveragePrice}
                     packageDescription={inquiry.packageDescription}
                     media={inquiry.media || []}
-                    onClick={() => setSelectedPackage(inquiry)}
+                    onClick={() => setSelectedPackage({
+                      _id: inquiry._id,
+                      packageName: inquiry.packageName,
+                      location: inquiry.location,
+                      packageAveragePrice: inquiry.packageAveragePrice,
+                      packageDescription: inquiry.packageDescription,
+                      media: inquiry.media,
+                      createdBy: inquiry.createdBy ? {
+                        name: inquiry.createdBy.userName,
+                        email: inquiry.createdBy.userEmail,
+                      } : undefined,
+                    })}
                   />
                 ))}
               </div>
@@ -164,6 +175,8 @@ export default function PackageInquiries() {
             )}
           </div>
         </section>
+
+
 
         {/* CTA Section with Background Pattern */}
         <section

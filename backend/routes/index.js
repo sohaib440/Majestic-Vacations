@@ -9,6 +9,7 @@ const booking =require("./bookingRoutes")
 const payment = require("./payment.routes")
 const testimonial = require("./testimonial.routes")
 const inquiryPackages = require("./inquiryPackages.routes")
+const vacationRentalInquiry = require("./vacationRentalInquiry.routes")
 
 router.use("/auth", auth);
 router.use("/user", user);
@@ -18,5 +19,6 @@ router.use("/booking", booking)
 router.use("/payment", payment)
 router.use("/testimonials", testimonial)
 router.use("/inquiry-packages", inquiryPackages)
+router.use("/vacation-rental-inquiries", vacationRentalInquiry)
 
 module.exports = router;
