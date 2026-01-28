@@ -47,6 +47,7 @@ import EditInquiryPackagePage from './pages/admin/inquiryPackages/[id]/edit/page
 import InquiryPackageDetailPage from './pages/admin/inquiryPackages/[id]/detail/page'
 import VacationRentals from "./pages/VacationRentals";
 import CreatePublicInquiryPackagePage from './pages/inquiry-packages/create/page';
+import AdminRentalInquiriesPage from './pages/admin/rentalInquiries/page';
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -120,7 +121,8 @@ const App = () => (
                 {/* Inquiry Management */}
                 <Route path="inquiry" element={<InquiryPage />} />
 
-              
+                {/* Rental Inquiries Management */}
+                <Route path="rental-inquiries" element={<AdminRentalInquiriesPage />} />
 
                 {/* Testimonials Management */}
                 <Route path="testimonial" element={<TestimonialsPage />} />

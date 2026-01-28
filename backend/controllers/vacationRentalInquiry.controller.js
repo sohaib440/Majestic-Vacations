@@ -62,24 +62,45 @@ const createVacationRentalInquiry = async (req, res) => {
 // Get all vacation rental inquiries (admin only)
 const getAllVacationRentalInquiries = async (req, res) => {
   try {
-    const { location, packageName, sortBy = 'createdAt' } = req.query;
+    const { search = '', location = '', page = 1, limit = 10, sortBy = 'createdAt' } = req.query;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
     const filter = {};
 
+    // Search in name, email, and phone
+    if (search) {
+      filter.$or = [
+        { userName: { $regex: search, $options: 'i' } },
+        { userEmail: { $regex: search, $options: 'i' } },
+        { userPhone: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Filter by location
     if (location) {
       filter.location = { $regex: location, $options: 'i' };
     }
 
-    if (packageName) {
-      filter.packageName = { $regex: packageName, $options: 'i' };
-    }
-
+    const total = await VacationRentalInquiry.countDocuments(filter);
     const inquiries = await VacationRentalInquiry.find(filter)
-      .sort({ [sortBy]: -1 });
+      .sort({ [sortBy]: -1 })
+      .skip(skip)
+      .limit(limitNum);
+
+    const totalPages = Math.ceil(total / limitNum);
 
     res.status(200).json({
       success: true,
       count: inquiries.length,
-      data: inquiries
+      data: inquiries,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages: totalPages
+      }
     });
   } catch (error) {
     console.error('Error fetching vacation rental inquiries:', error);

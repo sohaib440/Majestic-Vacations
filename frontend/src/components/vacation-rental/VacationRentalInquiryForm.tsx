@@ -26,9 +26,45 @@ const VacationRentalInquiryForm: React.FC<VacationRentalInquiryFormProps> = ({
   const [startDate, setStartDate] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Auto-calculate number of days when dates change
+  const calculateDays = (start: string, end: string) => {
+    if (start && end) {
+      const startDateObj = new Date(start);
+      const endDateObj = new Date(end);
+      if (endDateObj > startDateObj) {
+        const diffTime = Math.abs(endDateObj.getTime() - startDateObj.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays.toString();
+      }
+    }
+    return '1';
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Handle date changes to auto-calculate numberOfDays
+    if (name === 'startDate') {
+      setStartDate(value);
+      const newFormData = { ...formData, [name]: value };
+      
+      // Auto-calculate days if end date exists
+      if (formData.endDate) {
+        newFormData.numberOfDays = calculateDays(value, formData.endDate);
+      }
+      setFormData(newFormData);
+    } else if (name === 'endDate') {
+      const newFormData = { ...formData, [name]: value };
+      
+      // Auto-calculate days if start date exists
+      if (formData.startDate) {
+        newFormData.numberOfDays = calculateDays(formData.startDate, value);
+      }
+      setFormData(newFormData);
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -201,10 +237,7 @@ const VacationRentalInquiryForm: React.FC<VacationRentalInquiryFormProps> = ({
               name="startDate"
               min={new Date().toISOString().split('T')[0]}
               value={formData.startDate}
-              onChange={(e) => {
-                handleChange(e);
-                setStartDate(e.target.value);
-              }}
+              onChange={handleChange}
               disabled={isSubmitting}
               className={`rounded-lg ${errors.startDate ? 'border-red-500 focus:border-red-500' : 'border-amber-200'}`}
             />
@@ -217,7 +250,7 @@ const VacationRentalInquiryForm: React.FC<VacationRentalInquiryFormProps> = ({
             <Input 
               type="date"
               name="endDate"
-              min={startDate || new Date().toISOString().split('T')[0]}
+              min={formData.startDate || new Date().toISOString().split('T')[0]}
               value={formData.endDate}
               onChange={handleChange}
               disabled={isSubmitting}
@@ -229,20 +262,27 @@ const VacationRentalInquiryForm: React.FC<VacationRentalInquiryFormProps> = ({
 
         {/* Guest Info Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Number of Days */}
+          {/* Number of Days - Auto-calculated */}
           <div>
             <label className="block text-sm font-semibold text-amber-900 mb-2">Number of Days *</label>
-            <Input 
-              type="number"
-              name="numberOfDays"
-              min="1"
-              max="365"
-              placeholder="Enter number of days" 
-              value={formData.numberOfDays}
-              onChange={handleChange}
-              disabled={isSubmitting}
-              className={`rounded-lg ${errors.numberOfDays ? 'border-red-500 focus:border-red-500' : 'border-amber-200'}`}
-            />
+            <div className="relative">
+              <Input 
+                type="number"
+                name="numberOfDays"
+                min="1"
+                max="365"
+                placeholder="Auto-calculated" 
+                value={formData.numberOfDays}
+                readOnly
+                disabled={isSubmitting || !formData.startDate || !formData.endDate}
+                className={`rounded-lg bg-amber-100 cursor-not-allowed ${errors.numberOfDays ? 'border-red-500' : 'border-amber-200'}`}
+              />
+              {formData.startDate && formData.endDate && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-amber-700 bg-white px-2 py-1 rounded">
+                  Auto
+                </span>
+              )}
+            </div>
             {errors.numberOfDays && <p className="text-red-500 text-xs mt-2 font-medium">{errors.numberOfDays}</p>}
           </div>
 
