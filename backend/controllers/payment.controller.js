@@ -14,11 +14,12 @@ paypal.configure({
 exports.createPayment = async (req, res) => {
   try {
     const { bookingId, provider, paymentPlan, installmentNumber } = req.body;
+    const normalizedPaymentPlan = paymentPlan || "full";
 
     console.log("🔄 Creating payment →", { 
       bookingId, 
       provider, 
-      paymentPlan, 
+      paymentPlan: normalizedPaymentPlan, 
       installmentNumber 
     });
 
@@ -44,13 +45,26 @@ exports.createPayment = async (req, res) => {
     }
 
     // Calculate amount
-    let amount = paymentPlan === "full"
+    let amount = normalizedPaymentPlan === "full"
       ? booking.pricing.totalAmount
       : booking.pricing.monthlyAmount;
 
+    if (paymentPlan === "monthly" && (!amount || Number.isNaN(amount))) {
+      if (booking.pricing.monthsRequired) {
+        amount = booking.pricing.totalAmount / booking.pricing.monthsRequired;
+      }
+    }
+
+    if (!amount || Number.isNaN(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment amount. Please recheck booking pricing.",
+      });
+    }
+
     console.log(`💵 Calculated amount: ${amount} ${booking.pricing.currency}`);
 
-    if (paymentPlan === "monthly") {
+    if (normalizedPaymentPlan === "monthly") {
       if (installmentNumber > booking.pricing.monthsRequired) {
         return res.status(400).json({ 
           success: false, 
@@ -60,20 +74,29 @@ exports.createPayment = async (req, res) => {
       console.log(`📅 Monthly payment: Installment ${installmentNumber} of ${booking.pricing.monthsRequired}`);
     }
 
+    const currency = (booking.pricing.currency || "USD").toLowerCase();
     amount = Math.round(amount * 100); // Convert to cents
 
     let paymentData;
     let clientResponse;
 
-    // STRIPE PAYMENT
-    if (provider === "stripe") {
-      console.log(`💳 Processing Stripe payment for ${booking.bookingReference}`);
-      
+    const isStripeProvider = ["stripe", "affirm", "klarna"].includes(provider);
+
+    // STRIPE PAYMENT (Card + BNPL via Stripe)
+    if (isStripeProvider) {
+      console.log(`💳 Processing Stripe payment for ${booking.bookingReference} (${provider})`);
+      const paymentMethods =
+        provider === "affirm"
+          ? ["affirm"]
+          : provider === "klarna"
+          ? ["klarna"]
+          : ["card"];
+
       const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
+        payment_method_types: paymentMethods,
         line_items: [{
           price_data: {
-            currency: 'usd',
+            currency,
             product_data: {
               name: `Booking ${booking.bookingReference} - ${booking.tour?.title || 'Tour'}`,
               description: `${booking.seatsBooked} seat(s) • ${booking.tour?.destination || ''}`,
@@ -88,10 +111,11 @@ exports.createPayment = async (req, res) => {
         metadata: {
           bookingId: booking._id.toString(),
           bookingReference: booking.bookingReference,
-          paymentPlan,
+          paymentPlan: normalizedPaymentPlan,
           installmentNumber: installmentNumber || "1",
           seatsBooked: booking.seatsBooked.toString(),
-          tourId: booking.tour?._id?.toString() || ""
+          tourId: booking.tour?._id?.toString() || "",
+          bnplProvider: provider === "stripe" ? "" : provider,
         },
       });
 
@@ -100,17 +124,18 @@ exports.createPayment = async (req, res) => {
 
       paymentData = {
         booking: booking._id,
-        provider: "stripe",
+        provider,
         providerPaymentId: session.id,
         amount: amount / 100,
-        currency: 'usd',
+        currency,
         status: "created",
-        paymentPlan,
+        paymentPlan: normalizedPaymentPlan,
         installmentNumber: installmentNumber || 1,
         metadata: {
           bookingReference: booking.bookingReference,
           seatsBooked: booking.seatsBooked,
-          tourTitle: booking.tour?.title
+          tourTitle: booking.tour?.title,
+          bnplProvider: provider === "stripe" ? undefined : provider,
         }
       };
 
@@ -127,15 +152,15 @@ exports.createPayment = async (req, res) => {
         intent: "sale",
         payer: { payment_method: "paypal" },
         redirect_urls: {
-          return_url: `${process.env.FRONTEND_URL}/payment/success?bookingId=${bookingId}`,
-          cancel_url: `${process.env.FRONTEND_URL}/payment/cancel?bookingId=${bookingId}`,
+          return_url: `${process.env.FRONTEND_URL}/booking/success?bookingId=${bookingId}`,
+          cancel_url: `${process.env.FRONTEND_URL}/booking/cancel?bookingId=${bookingId}`,
         },
         transactions: [{
           amount: {
             total: (amount / 100).toFixed(2),
-            currency: "USD",
+            currency: (booking.pricing.currency || "USD").toUpperCase(),
           },
-          description: `Payment for booking ${booking.bookingReference} - ${paymentPlan}`,
+          description: `Payment for booking ${booking.bookingReference} - ${normalizedPaymentPlan}`,
         }],
       };
 
@@ -151,9 +176,9 @@ exports.createPayment = async (req, res) => {
         provider: "paypal",
         providerPaymentId: paypalPayment.id,
         amount: amount / 100,
-        currency: "usd",
+        currency,
         status: "created",
-        paymentPlan,
+        paymentPlan: normalizedPaymentPlan,
         installmentNumber,
       };
 
@@ -174,7 +199,7 @@ exports.createPayment = async (req, res) => {
     console.log(`💾 Payment record saved: ${savedPayment._id}`);
 
     // Update booking for monthly payments
-    if (paymentPlan === "monthly") {
+    if (normalizedPaymentPlan === "monthly") {
       booking.paymentStatus = "partial";
       await booking.save();
       console.log(`📊 Booking marked as partial payment`);

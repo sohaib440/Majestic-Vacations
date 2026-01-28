@@ -41,7 +41,17 @@ import {
 } from "@/types/tour-package";
 import { toast } from "@/hooks/use-toast";
 import { getTourImageUrl } from "@/lib/image-utils";
+
 const baseUrl = import.meta.env.VITE_API_URL;
+
+// Define price tier types
+const PRICE_TIER_TYPES = [
+  { id: "infant", label: "Infant", ageRange: "0-2 years", description: "Ages 0 to 2 years" },
+  { id: "child", label: "Child", ageRange: "2-12 years", description: "Ages 2 to 12 years" },
+  { id: "adult", label: "Adult", ageRange: "12+ years", description: "Ages 12 and above" },
+] as const;
+
+type PriceTierType = typeof PRICE_TIER_TYPES[number]['id'];
 
 // Updated schema
 const tourSchema = z.object({
@@ -56,12 +66,31 @@ const tourSchema = z.object({
   priceTiers: z
     .array(
       z.object({
+        type: z.enum(["infant", "child", "adult"]),
         ageGroup: z.string().min(1, "Age group is required"),
         ageRange: z.string().min(1, "Age range is required"),
         price: z.number().min(0, "Price is required"),
       })
     )
-    .min(1, "At least one price tier is required"),
+    .refine(
+      (tiers) => {
+        const types = tiers.map(tier => tier.type);
+        // Check if all three required types are present
+        return ["infant", "child", "adult"].every(type => types.includes(type as PriceTierType));
+      },
+      {
+        message: "All three price tiers (Infant, Child, Adult) are required",
+      }
+    )
+    .refine(
+      (tiers) => {
+        const uniqueTypes = new Set(tiers.map(tier => tier.type));
+        return uniqueTypes.size === tiers.length;
+      },
+      {
+        message: "Duplicate price tiers are not allowed",
+      }
+    ),
   rating: z.number().min(1).max(5).optional(),
   highlights: z
     .array(
@@ -74,7 +103,7 @@ const tourSchema = z.object({
     .default([]),
   featured: z.boolean().default(false),
   isActive: z.boolean().default(true),
-  isDeleted: z.boolean().default(false), // ← ADD THIS
+  isDeleted: z.boolean().default(false),
 });
 
 type TourFormValues = z.infer<typeof tourSchema>;
@@ -102,6 +131,7 @@ const TourForm: React.FC<TourFormProps> = ({
   const [highlights, setHighlights] = useState<HighlightItem[]>(
     initialData?.highlights || []
   );
+  const [selectedTierTypes, setSelectedTierTypes] = useState<Set<PriceTierType>>(new Set());
 
   const [highlightMediaFiles, setHighlightMediaFiles] = useState<
     { file: File; index: number }[]
@@ -120,16 +150,19 @@ const TourForm: React.FC<TourFormProps> = ({
       title: initialData?.title || "",
       destination: initialData?.destination || "",
       country: (initialData?.country as "Dubai") || "Dubai",
-      startDate: initialData?.startDate || "", // Changed from date
+      startDate: initialData?.startDate || "",
       endDate: initialData?.endDate || "",
       duration: initialData?.duration || "",
       remaining_seats: initialData?.remaining_seats || 0,
-
-      priceTiers: initialData?.priceTiers || [{ ageGroup: "Adult", ageRange: "12+", price: 0 }],
+      priceTiers: initialData?.priceTiers || [
+        { type: "adult", ageGroup: "Adult", ageRange: "12+ years", price: 0 },
+        { type: "child", ageGroup: "Child", ageRange: "2-12 years", price: 0 },
+        { type: "infant", ageGroup: "Infant", ageRange: "0-2 years", price: 0 },
+      ],
       rating: initialData?.rating || 4.8,
       highlights: initialData?.highlights || [],
       featured:
-        initialData?.featured !== undefined ? initialData.featured : false, // Explicit check
+        initialData?.featured !== undefined ? initialData.featured : false,
       isActive: initialData?.isActive ?? true,
       isDeleted: initialData?.isDeleted || false,
     },
@@ -143,6 +176,17 @@ const TourForm: React.FC<TourFormProps> = ({
     control: form.control,
     name: "priceTiers",
   });
+
+  // Initialize selected tier types
+  useEffect(() => {
+    if (initialData?.priceTiers) {
+      const types = new Set(initialData.priceTiers.map(tier => tier.type as PriceTierType));
+      setSelectedTierTypes(types);
+    } else {
+      // Default to all three tiers selected
+      setSelectedTierTypes(new Set(["infant", "child", "adult"]));
+    }
+  }, [initialData]);
 
   // Initialize images and highlights when initialData changes
   useEffect(() => {
@@ -292,16 +336,45 @@ const TourForm: React.FC<TourFormProps> = ({
     updateHighlight(index, "mediaType", mediaType);
   };
 
-  const handleAddPriceTier = () => {
-    appendPriceTier({ ageGroup: "", ageRange: "", price: 0 });
+  const handleAddPriceTier = (tierType: PriceTierType) => {
+    const tierConfig = PRICE_TIER_TYPES.find(tier => tier.id === tierType);
+    if (!tierConfig || selectedTierTypes.has(tierType)) return;
+
+    appendPriceTier({
+      type: tierType,
+      ageGroup: tierConfig.label,
+      ageRange: tierConfig.ageRange,
+      price: 0,
+    });
+    setSelectedTierTypes(prev => new Set([...prev, tierType]));
   };
 
-  const handleRemovePriceTier = (index: number) => {
+  const handleRemovePriceTier = (index: number, tierType: PriceTierType) => {
     removePriceTier(index);
+    setSelectedTierTypes(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(tierType);
+      return newSet;
+    });
+  };
+
+  const getAvailableTiers = () => {
+    return PRICE_TIER_TYPES.filter(tier => !selectedTierTypes.has(tier.id));
   };
 
   const handleSubmit = (data: TourFormValues) => {
     console.log("Form data before submit:", data);
+    
+    // Ensure all three tiers are present
+    if (data.priceTiers.length !== 3) {
+      toast({
+        title: "Price Tiers Required",
+        description: "All three price tiers (Infant, Child, Adult) are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (mode === "create" && imageFiles.length === 0) {
       toast({
         title: "Images Required",
@@ -336,14 +409,16 @@ const TourForm: React.FC<TourFormProps> = ({
         startDate: initialData.startDate || "",
         endDate: initialData.endDate || "",
         duration: initialData.duration || "",
-        groupSize: initialData.groupSize || 1,
-        priceTiers: initialData.priceTiers || [{ ageGroup: "Adult", ageRange: "12+", price: 0 }],
+        remaining_seats: initialData.remaining_seats || 0,
+        priceTiers: initialData.priceTiers || [
+          { type: "adult", ageGroup: "Adult", ageRange: "12+ years", price: 0 },
+          { type: "child", ageGroup: "Child", ageRange: "2-12 years", price: 0 },
+          { type: "infant", ageGroup: "Infant", ageRange: "0-2 years", price: 0 },
+        ],
         rating: initialData.rating || 4.8,
         highlights: initialData.highlights || [],
-        featured:
-          initialData.featured !== undefined ? initialData.featured : false, // Explicit
-        isActive:
-          initialData.isActive !== undefined ? initialData.isActive : true,
+        featured: initialData.featured !== undefined ? initialData.featured : false,
+        isActive: initialData.isActive !== undefined ? initialData.isActive : true,
         isDeleted: initialData.isDeleted || false,
       });
     }
@@ -487,8 +562,6 @@ const TourForm: React.FC<TourFormProps> = ({
                   </FormItem>
                 )}
               />
-
-
             </div>
           </CardContent>
         </Card>
@@ -498,75 +571,131 @@ const TourForm: React.FC<TourFormProps> = ({
           <CardHeader>
             <CardTitle>Pricing</CardTitle>
             <CardDescription>
-              Add price tiers for different age groups.
+              Set prices for all three required age groups
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {priceTiersFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex items-center gap-4 p-4 border rounded-md"
-              >
-                <FormField
-                  control={form.control}
-                  name={`priceTiers.${index}.ageGroup`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Age Group</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Adult" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`priceTiers.${index}.ageRange`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Age Range</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 12+" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`priceTiers.${index}.price`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Price ($)</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => handleRemovePriceTier(index)}
-                  className="mt-8"
+            {/* Display existing price tiers */}
+            {priceTiersFields.map((field, index) => {
+              const tierConfig = PRICE_TIER_TYPES.find(t => t.id === field.type);
+              return (
+                <div
+                  key={field.id}
+                  className="flex items-center gap-4 p-4 border rounded-md"
                 >
-                  <X className="h-4 w-4" />
+                  <div className="flex-1">
+                    <div className="font-medium">{tierConfig?.label}</div>
+                    <div className="text-sm text-gray-500">{tierConfig?.description}</div>
+                    <div className="text-xs text-gray-400 mt-1">Age: {tierConfig?.ageRange}</div>
+                  </div>
+                  
+                  <FormField
+                    control={form.control}
+                    name={`priceTiers.${index}.price`}
+                    render={({ field: priceField }) => (
+                      <FormItem className="w-48">
+                        <FormLabel>Price ($)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            {...priceField}
+                            onChange={(e) =>
+                              priceField.onChange(parseFloat(e.target.value) || 0)
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Only show remove button if we have more than 3 tiers (shouldn't happen) */}
+                  {priceTiersFields.length > 3 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleRemovePriceTier(index, field.type as PriceTierType)}
+                      className="mt-8"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Add tier dropdown (only shows if not all tiers are added) */}
+            {getAvailableTiers().length > 0 && (
+              <div className="flex items-center gap-4">
+                <Select onValueChange={(value) => handleAddPriceTier(value as PriceTierType)}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Add price tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableTiers().map((tier) => (
+                      <SelectItem key={tier.id} value={tier.id}>
+                        {tier.label} ({tier.ageRange})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="button" variant="outline" onClick={() => {
+                  // Add all missing tiers
+                  getAvailableTiers().forEach(tier => handleAddPriceTier(tier.id));
+                }}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add All Missing Tiers
                 </Button>
               </div>
-            ))}
-            <Button type="button" variant="outline" onClick={handleAddPriceTier}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Price Tier
-            </Button>
+            )}
+
+            {/* Show warning if not all tiers are present */}
+            {selectedTierTypes.size < 3 && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                <div className="flex items-center gap-2">
+                  <div className="text-yellow-600 font-medium">
+                    {3 - selectedTierTypes.size} price tier(s) missing
+                  </div>
+                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                    Required
+                  </Badge>
+                </div>
+                <p className="text-sm text-yellow-600 mt-1">
+                  All three price tiers (Infant, Child, Adult) are required for this tour.
+                </p>
+                <div className="flex gap-2 mt-2">
+                  {PRICE_TIER_TYPES.map(tier => (
+                    <Badge 
+                      key={tier.id}
+                      variant={selectedTierTypes.has(tier.id) ? "default" : "outline"}
+                      className={selectedTierTypes.has(tier.id) ? "bg-green-100 text-green-800" : ""}
+                    >
+                      {tier.label}
+                      {selectedTierTypes.has(tier.id) ? " ✓" : ""}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Show success message when all tiers are present */}
+            {selectedTierTypes.size === 3 && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+                <div className="flex items-center gap-2">
+                  <div className="text-green-600 font-medium">
+                    All price tiers are configured
+                  </div>
+                  <Badge variant="outline" className="bg-green-100 text-green-800">
+                    Complete
+                  </Badge>
+                </div>
+                <p className="text-sm text-green-600 mt-1">
+                  All required price tiers are present. You can update prices as needed.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -787,7 +916,7 @@ const TourForm: React.FC<TourFormProps> = ({
 
             {highlights.length === 0 && (
               <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                <Plus className="h-12 w-12 text-gray-400 mx-to mb-4" />
+                <Plus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-sm text-gray-500">No highlights added yet</p>
                 <p className="text-xs text-gray-400 mt-1">
                   Add highlights to showcase the best features of your tour
@@ -833,9 +962,8 @@ const TourForm: React.FC<TourFormProps> = ({
                     <FormDescription>
                       {field.value
                         ? "Tour is visible to users"
-                        : "Tour is hidden from users and marked as deleted"}
+                        : "Tour is hidden from users"}
                     </FormDescription>
-                    {/* Remove the isDeleted check since it's not in form */}
                     {initialData?.isDeleted && (
                       <div className="text-sm text-red-500 mt-1">
                         ⚠️ Tour is currently marked as deleted
@@ -846,7 +974,6 @@ const TourForm: React.FC<TourFormProps> = ({
                     <Switch
                       checked={field.value}
                       onCheckedChange={field.onChange}
-                      // Remove disabled logic since isDeleted isn't in form
                     />
                   </FormControl>
                 </FormItem>
@@ -867,7 +994,9 @@ const TourForm: React.FC<TourFormProps> = ({
           <Button
             type="submit"
             disabled={
-              isSubmitting || (mode === "create" && imageFiles.length === 0)
+              isSubmitting || 
+              (mode === "create" && imageFiles.length === 0) ||
+              selectedTierTypes.size < 3
             }
           >
             {isSubmitting
@@ -883,4 +1012,3 @@ const TourForm: React.FC<TourFormProps> = ({
 };
 
 export default TourForm;
- 

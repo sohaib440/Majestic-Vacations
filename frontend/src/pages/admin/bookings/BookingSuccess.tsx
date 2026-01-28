@@ -16,21 +16,30 @@ export default function BookingSuccess() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [bookingId] = useState(searchParams.get('bookingId') || '');
   const sessionId = searchParams.get('session_id');
+  const provider = searchParams.get('provider');
+  const paypalPaymentId = searchParams.get('paymentId');
+  const paypalPayerId = searchParams.get('PayerID');
 
   useEffect(() => {
     const verifyPayment = async () => {
-      if (!bookingId || !sessionId) {
+      if (!bookingId) {
         setStatus('error');
         setLoading(false);
         toast({
           variant: 'destructive',
           title: 'Invalid Payment Response',
-          description: 'Missing booking or session information',
+          description: 'Missing booking information',
         });
         return;
       }
 
       try {
+        if (provider === 'paypal' && paypalPaymentId && paypalPayerId) {
+          await api.get('/payment/paypal/execute', {
+            params: { paymentId: paypalPaymentId, PayerID: paypalPayerId },
+          });
+        }
+
         // Optional: Verify with backend
         const res = await api.get(`/booking/${bookingId}`);
         const booking = res.data.data;
@@ -59,7 +68,7 @@ export default function BookingSuccess() {
     };
 
     verifyPayment();
-  }, [bookingId, sessionId, toast]);
+  }, [bookingId, sessionId, provider, paypalPaymentId, paypalPayerId, toast]);
 
   if (loading) {
     return (

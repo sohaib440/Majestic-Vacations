@@ -35,7 +35,7 @@ const PackagesPage: React.FC = () => {
 
         <div className="container mx-auto p-4">
           <PackagesGrid
-            filters={filters}
+            // filters={filters}
             isAdmin={false} // ← ADD THIS
             variant="featured"
             gridCols={{ sm: 1, md: 2, lg: 3 }}

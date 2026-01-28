@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const paymentSchema = new mongoose.Schema(
   {
     booking: { type: mongoose.Schema.Types.ObjectId, ref: "Booking", required: true, index: true },
-    provider: { type: String, enum: ["stripe", "paypal"], required: true },
+    provider: { type: String, enum: ["stripe", "paypal", "affirm", "klarna"], required: true },
     providerPaymentId: { type: String, unique: true, sparse: true, index: true },
     providerSessionId: String,
     amount: { type: Number, required: true, min: 1 },

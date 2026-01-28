@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { CurrencyPrice } from './currency/CurrencyPrice'; 
-const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_API_URL || '';
 
 // import { useAuth } from '@/contexts/AuthContext';
 
@@ -120,6 +120,13 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
    const discountPercentage = tour.originalPrice && tour.originalPrice > tour.price
       ? Math.round(((tour.originalPrice - tour.price) / tour.originalPrice) * 100)
       : 0;
+   const getMediaUrl = (path?: string | null) => {
+      if (!path) return '';
+      return path.startsWith('http') ? path : `${baseUrl}/${path}`;
+   };
+   const imageUrls = (tour.images || [])
+      .map((img) => getMediaUrl(img))
+      .filter(Boolean);
 
    return (
       <div className="container mx-auto py-8 space-y-6">
@@ -182,11 +189,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   <CardContent className="p-0">
                      <div className="relative">
                         <img
-                           src={
-                              tour.images && tour.images.length > 0
-                                 ? `${baseUrl}/${tour.images[0]}`
-                                 : '/placeholder.svg'
-                           }
+                           src={imageUrls[0] || '/placeholder.svg'}
                            alt={tour.title}
                            className="w-full h-96 object-cover rounded-lg"
                            onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
@@ -206,6 +209,31 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                      </div>
                   </CardContent>
                </Card>
+               {/* Gallery */}
+               <Card className={!isAdmin ? "border-0 shadow-none" : ""}>
+                  <CardHeader>
+                     <CardTitle>Gallery</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                     {imageUrls.length > 0 ? (
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                           {imageUrls.map((img, index) => (
+                              <div key={`${img}-${index}`} className="relative overflow-hidden rounded-lg border">
+                                 <img
+                                    src={img}
+                                    alt={`${tour.title} image ${index + 1}`}
+                                    className="h-36 w-full object-cover transition-transform duration-300 hover:scale-105"
+                                    onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
+                                 />
+                              </div>
+                           ))}
+                        </div>
+                     ) : (
+                        <div className="text-sm text-muted-foreground">No images available.</div>
+                     )}
+                  </CardContent>
+               </Card>
+
                {/* Highlights */}
                {tour.highlights && tour.highlights.length > 0 && (
                   <Card className={!isAdmin  ? "border-0 shadow-none" : ""}>
@@ -217,27 +245,34 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                      </CardHeader>
                      <CardContent>
                         <div className="space-y-4">
-                           {tour.highlights.map((highlight, index) => (
+                           {tour.highlights.map((highlight, index) => {
+                              const highlightText = typeof highlight === 'string' ? highlight : highlight.text;
+                              const highlightMedia = typeof highlight === 'string' ? null : highlight.media;
+                              const highlightMediaTypeRaw = typeof highlight === 'string' ? null : highlight.mediaType;
+                              const highlightMediaType = typeof highlightMediaTypeRaw === 'string'
+                                 ? highlightMediaTypeRaw.toLowerCase()
+                                 : null;
+                              return (
                               <div key={index} className="space-y-2">
                                  {/* Render the highlight text */}
                                  <div className="flex items-start gap-2">
                                     <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                                    <span className="text-sm">{highlight.text}</span>
+                                    <span className="text-sm">{highlightText}</span>
                                  </div>
 
                                  {/* Render media if it exists */}
-                                 {highlight.media && highlight.mediaType && (
+                                 {highlightMedia && highlightMediaType && (
                                     <div className="ml-6 mt-2">
-                                       {highlight.mediaType === 'image' ? (
+                                       {highlightMediaType === 'image' ? (
                                           <img
-                                             src={`${baseUrl}/${highlight.media}`}
+                                             src={getMediaUrl(highlightMedia)}
                                              alt={`Highlight ${index + 1}`}
                                              className="max-w-md rounded-lg border"
                                              onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
                                           />
-                                       ) : highlight.mediaType === 'video' ? (
+                                       ) : highlightMediaType === 'video' ? (
                                           <video
-                                             src={`${baseUrl}/${highlight.media}`}
+                                             src={getMediaUrl(highlightMedia)}
                                              controls
                                              className="max-w-md rounded-lg border"
                                           >
@@ -247,7 +282,8 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({
                                     </div>
                                  )}
                               </div>
-                           ))}
+                           );
+                           })}
                         </div>
                      </CardContent>
                   </Card>

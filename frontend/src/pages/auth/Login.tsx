@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, AlertCircle } from "lucide-react";
+import { LogIn, Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import logo from "@/assets/logo.webp";
 import { useLogin } from "@/features/authApi";
@@ -16,6 +16,7 @@ const Login: React.FC = () => {
       userPassword: ""
    });
    const [error, setError] = useState<string>("");
+   const [showPassword, setShowPassword] = useState(false);
    const navigate = useNavigate();
    const [searchParams] = useSearchParams();
    const message = searchParams.get('message');
@@ -40,6 +41,10 @@ const Login: React.FC = () => {
       } catch (err: any) {
          setError(err.response?.data?.message || "Login failed. Please try again.");
       }
+   };
+
+   const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
    };
 
    return (
@@ -102,13 +107,25 @@ const Login: React.FC = () => {
                            <Input
                               id="userPassword"
                               name="userPassword"
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="Enter your password"
-                              className="pl-10"
+                              className="pl-10 pr-10"
                               value={formData.userPassword}
                               onChange={handleChange}
                               required
                            />
+                           <button
+                              type="button"
+                              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                              onClick={togglePasswordVisibility}
+                              aria-label={showPassword ? "Hide password" : "Show password"}
+                           >
+                              {showPassword ? (
+                                 <EyeOff className="h-4 w-4" />
+                              ) : (
+                                 <Eye className="h-4 w-4" />
+                              )}
+                           </button>
                         </div>
                      </div>
 

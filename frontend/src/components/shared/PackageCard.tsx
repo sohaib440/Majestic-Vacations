@@ -43,6 +43,12 @@ const PackageCard: React.FC<PackageCardProps> = ({
    const formattedEndDate = new Date(tour.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
    const formattedDateRange = `${formattedStartDate} - ${formattedEndDate}`;
 
+   const adultTier = tour.priceTiers?.find((tier) => tier.ageGroup === 'Adult');
+   const fallbackMinPrice = tour.priceTiers && tour.priceTiers.length > 0
+      ? tour.priceTiers.reduce((min, tier) => Math.min(min, tier.price), Infinity)
+      : tour.price;
+   const displayPrice = adultTier?.price ?? fallbackMinPrice;
+
    const handleBooking = (e: React.MouseEvent) => {
       e.preventDefault();
       navigate(`/packages/${tour._id}`);
@@ -159,7 +165,7 @@ const PackageCard: React.FC<PackageCardProps> = ({
                <div>
                   {tour.priceTiers && tour.priceTiers.length > 0 && (
                      <>
-                        {tour.originalPrice && tour.originalPrice > tour.priceTiers[0].price && (
+                        {tour.originalPrice && tour.originalPrice > displayPrice && (
                            <p className="text-sm text-muted-foreground line-through">
                               <CurrencyPrice
                                  amount={tour.originalPrice}
@@ -168,9 +174,11 @@ const PackageCard: React.FC<PackageCardProps> = ({
                               />
                            </p>
                         )}
-                        <p className="text-sm text-muted-foreground">From</p>
+                        <p className="text-sm text-muted-foreground">
+                           {adultTier ? 'Adult' : 'From'}
+                        </p>
                         <CurrencyPrice
-                           amount={tour.priceTiers.reduce((min, tier) => Math.min(min, tier.price), Infinity)}
+                           amount={displayPrice}
                            variant="compact"
                            className="text-primary text-lg font-bold"
                         />

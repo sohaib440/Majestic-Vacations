@@ -36,8 +36,19 @@ app.use(
 );
 
 /*    4️⃣ CORS */
+const allowedOrigins = [
+   process.env.FRONTEND_URL,
+   "http://localhost:5173",
+   "http://localhost:8080",
+].filter(Boolean);
+
 const corsOptions = {
-   origin: process.env.FRONTEND_URL,
+   origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+         return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+   },
    credentials: true,
    optionsSuccessStatus: 200,
 };
