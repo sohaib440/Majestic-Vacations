@@ -45,6 +45,9 @@ import InquiryPackagesPage from './pages/admin/inquiryPackages/page';
 import CreateInquiryPackagePage from './pages/admin/inquiryPackages/create/page';
 import EditInquiryPackagePage from './pages/admin/inquiryPackages/[id]/edit/page';
 import InquiryPackageDetailPage from './pages/admin/inquiryPackages/[id]/detail/page'
+import VacationRentals from "./pages/VacationRentals";
+import CreatePublicInquiryPackagePage from './pages/inquiry-packages/create/page';
+import AdminRentalInquiriesPage from './pages/admin/rentalInquiries/page';
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -66,7 +69,9 @@ const App = () => (
               <Route path="/booking/create" element={<Layout><CreateBookingPage /></Layout>} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/testimonials" element={<Testimonials />} />
-              <Route path="/package-inquiries" element={<PackageInquiries />} />
+              <Route path="/inquiry-packages" element={<PackageInquiries />} />
+              <Route path="/inquiry-packages/create" element={<CreatePublicInquiryPackagePage />} />
+              <Route path="/vacation-rentals" element={<VacationRentals />} />
               <Route path="/destinations/dubai" element={<Dubai />} />
               <Route path="/destinations/turkey" element={<Turkey />} />
               <Route path="/destinations/greece" element={<Greece />} />
@@ -116,7 +121,8 @@ const App = () => (
                 {/* Inquiry Management */}
                 <Route path="inquiry" element={<InquiryPage />} />
 
-              
+                {/* Rental Inquiries Management */}
+                <Route path="rental-inquiries" element={<AdminRentalInquiriesPage />} />
 
                 {/* Testimonials Management */}
                 <Route path="testimonial" element={<TestimonialsPage />} />

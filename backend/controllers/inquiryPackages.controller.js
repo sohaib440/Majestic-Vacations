@@ -10,7 +10,7 @@ exports.createPackageInquiry = async (req, res) => {
   try {
     const { packageName, packageDescription, location, packageAveragePrice } = req.body;
     const userId = req.user.id;
-console.log('Request Body:', req.body);
+    
     // Validation
     if (!packageName) {
       return res.status(400).json({ error: 'Package name is required' });
@@ -45,7 +45,7 @@ console.log('Request Body:', req.body);
     });
 
     await packageInquiry.save();
-    await packageInquiry.populate('createdBy', 'name email');
+    await packageInquiry.populate('createdBy', 'userName userEmail userRole _id');
 
     res.status(201).json({
       success: true,
@@ -96,11 +96,10 @@ exports.getAllPackageInquiries = async (req, res) => {
 
     // Fetch inquiries
     const inquiries = await PackageInquiry.find(filter)
-      .populate('createdBy', 'name email avatar')
+      .populate('createdBy', 'userName userEmail userRole _id')
       .sort(sortBy)
       .skip(skip)
-      .limit(limitNum)
-      .lean();
+      .limit(limitNum);
 
     res.status(200).json({
       success: true,
@@ -122,14 +121,14 @@ exports.getAllPackageInquiries = async (req, res) => {
 };
 
 // @desc    Get single package inquiry by ID
-// @route   GET /api/package-inquiries/:id
+// @route   GET /api/inquiry-packages/:id
 // @access  Public
 exports.getPackageInquiryById = async (req, res) => {
   try {
     const { id } = req.params;
 
     const inquiry = await PackageInquiry.findOne({ _id: id, isDeleated: false })
-      .populate('createdBy', 'name email avatar');
+      .populate('createdBy', 'userName userEmail userRole _id');
 
     if (!inquiry) {
       return res.status(404).json({ error: 'Package inquiry not found' });
@@ -149,7 +148,7 @@ exports.getPackageInquiryById = async (req, res) => {
 };
 
 // @desc    Update package inquiry
-// @route   PUT /api/package-inquiries/:id
+// @route   PUT /api/inquiry-packages/:id
 // @access  Private
 exports.updatePackageInquiry = async (req, res) => {
   try {
@@ -186,7 +185,7 @@ exports.updatePackageInquiry = async (req, res) => {
     }
 
     await inquiry.save();
-    await inquiry.populate('createdBy', 'name email');
+    await inquiry.populate('createdBy', 'userName userEmail userRole _id');
 
     res.status(200).json({
       success: true,
@@ -307,11 +306,10 @@ exports.getByLocation = async (req, res) => {
 
     const total = await PackageInquiry.countDocuments(filter);
     const inquiries = await PackageInquiry.find(filter)
-      .populate('createdBy', 'name email avatar')
+      .populate('createdBy', 'userName userEmail userRole _id')
       .sort('-createdAt')
       .skip(skip)
-      .limit(limitNum)
-      .lean();
+      .limit(limitNum);
 
     res.status(200).json({
       success: true,
@@ -352,10 +350,10 @@ exports.getUserInquiries = async (req, res) => {
       createdBy: userId,
       isDeleated: false,
     })
+      .populate('createdBy', 'userName userEmail userRole _id')
       .sort('-createdAt')
       .skip(skip)
-      .limit(limitNum)
-      .lean();
+      .limit(limitNum);
 
     res.status(200).json({
       success: true,
@@ -449,11 +447,10 @@ exports.searchPackageInquiries = async (req, res) => {
 
     const total = await PackageInquiry.countDocuments(filter);
     const results = await PackageInquiry.find(filter)
-      .populate('createdBy', 'name email avatar')
+      .populate('createdBy', 'userName userEmail userRole _id')
       .sort('-createdAt')
       .skip(skip)
-      .limit(limitNum)
-      .lean();
+      .limit(limitNum);
 
     res.status(200).json({
       success: true,

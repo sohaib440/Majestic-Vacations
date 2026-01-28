@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,12 +9,14 @@ import LoadingSpinner from '@/components/ui/loading-spinner';
 import { toast } from '@/hooks/use-toast';
 import { Edit, Trash2, ArrowLeft, Video } from 'lucide-react';
 
-const baseUrl = import.meta.env.VITE_API_URL;
+// Fix baseUrl to remove /api suffix for media URLs
+const apiUrl = import.meta.env.VITE_API_URL;
+const baseUrl = apiUrl?.replace('/api', '') || 'http://localhost:5000';
 
 const InquiryPackageDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { data: inquiry, isLoading, refetch } = useGetPackageInquiryById(id || '');
+  const { data: inquiry, isLoading, refetch, error } = useGetPackageInquiryById(id || '');
   const deleteMedia = useDeletePackageMedia();
 
   const handleDeleteMedia = async (mediaIndex: number) => {
@@ -67,7 +69,7 @@ const InquiryPackageDetailPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{inquiry.packageName}</h1>
             <p className="text-muted-foreground">
-              Created by {inquiry.createdBy?.name} on{' '}
+              Created by {inquiry.createdBy?.userName || 'Unknown'} on{' '}
               {new Date(inquiry.createdAt).toLocaleDateString()}
             </p>
           </div>
@@ -99,26 +101,34 @@ const InquiryPackageDetailPage: React.FC = () => {
           </Card>
 
           {/* Media Gallery */}
-          {inquiry.media && inquiry.media.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Media Files ({inquiry.media.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {inquiry.media.map((media, index) => (
-                    <div key={index} className="relative group">
-                      <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square">
+          {inquiry.media && inquiry.media.length > 0 ? (
+            <>
+              {console.log('📸 Rendering media gallery with', inquiry.media.length, 'items')}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Media Files ({inquiry.media.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    {inquiry.media.map((media, index) => (
+                      <div key={index} className="relative group">
+                        <div className="rounded-lg overflow-hidden bg-gray-100 aspect-square">
                         {media.type === 'video' ? (
                           <div className="w-full h-full flex items-center justify-center bg-gray-200">
                             <Video className="h-8 w-8 text-gray-400" />
                           </div>
                         ) : (
                           <img
-                            src={`${baseUrl}/${media.url}`}
+                            src={`${baseUrl}${media.url}`}
                             alt={`media-${index}`}
                             className="w-full h-full object-cover"
-                            onError={(e) => (e.currentTarget.src = '/placeholder.svg')}
+                            onLoad={(e) => {
+                              // Image loaded successfully
+                            }}
+                            onError={(e) => {
+                              const imgElement = e.currentTarget;
+                              imgElement.src = '/placeholder.svg';
+                            }}
                           />
                         )}
                       </div>
@@ -137,6 +147,13 @@ const InquiryPackageDetailPage: React.FC = () => {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+            </>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8 text-gray-500">
+                No media files available
               </CardContent>
             </Card>
           )}

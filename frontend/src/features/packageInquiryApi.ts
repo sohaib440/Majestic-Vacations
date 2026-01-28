@@ -18,9 +18,9 @@ export interface PackageInquiry {
   media: MediaItem[];
   createdBy: {
     _id: string;
-    name: string;
-    email: string;
-    avatar?: string;
+    userName: string;
+    userEmail: string;
+    userRole?: string;
   };
   createdAt: string;
   isDeleated: boolean;
@@ -203,6 +203,49 @@ export const useDeletePackageMedia = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packageInquiry'] });
+    },
+  });
+};
+
+// Get user's package inquiries
+export const useGetUserInquiries = (userId: string, page = 1, limit = 12) => {
+  return useQuery({
+    queryKey: ['userPackageInquiries', userId, page, limit],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+
+      const response = await api.get(
+        `/inquiry-packages/user/${userId}?${params.toString()}`
+      );
+      return response.data;
+    },
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+// Search package inquiries
+export const useSearchPackageInquiries = (
+  keyword?: string,
+  location?: string,
+  minPrice?: number,
+  maxPrice?: number,
+  page = 1,
+  limit = 12
+) => {
+  return useMutation({
+    mutationFn: async () => {
+      const response = await api.post('/inquiry-packages/search', {
+        keyword,
+        location,
+        minPrice,
+        maxPrice,
+        page,
+        limit,
+      });
+      return response.data;
     },
   });
 };

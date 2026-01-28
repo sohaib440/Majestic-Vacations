@@ -127,6 +127,18 @@ export function Navbar() {
                 )}
               </Link>
 
+              {/* Vacation Rentals/B&B */}
+              <Link to="/vacation-rentals" className="relative group">
+                <div className={getLinkStyles(isActive("/vacation-rentals"))}>
+                  Vacation Rental/B&B
+                  <div className={`absolute inset-0 -z-10 rounded-lg transition-all duration-300 ${isActive("/vacation-rentals") ? "bg-primary/10 scale-105" : "group-hover:bg-primary/5 group-hover:scale-105"
+                    }`} />
+                </div>
+                {isActive("/vacation-rentals") && (
+                  <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-full`} />
+                )}
+              </Link>
+
               {/* Destinations Dropdown */}
               <div
                 className="relative"
@@ -283,6 +295,15 @@ export function Navbar() {
                   }`}
               >
                 Packages
+              </Link>
+
+              <Link
+                to="/vacation-rentals"
+                onClick={() => setIsOpen(false)}
+                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${isActive("/vacation-rentals") ? "bg-primary/10 text-primary" : "text-foreground hover:bg-primary/5 hover:text-primary"
+                  }`}
+              >
+                Vacation Rental/B&B
               </Link>
 
               {/* Mobile Destinations */}

@@ -10,7 +10,7 @@ const tourHighlightsDir = "uploads/tour-highlights";
 const testimonialsDir = "uploads/testimonials";
 const testimonialUserPicsDir = "uploads/testimonials/user-pics";
 const testimonialMediaDir = "uploads/testimonials/media";
-const packageInquiriesDir = "uploads/package-inquiries";
+const packageInquiriesDir = "uploads/inquiry-packages";
 
 [tourPackagesDir, tourHighlightsDir, testimonialsDir, testimonialUserPicsDir, testimonialMediaDir, packageInquiriesDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
@@ -32,7 +32,7 @@ const storage = multer.diskStorage({
       // Check route to determine if it's testimonial or package inquiry media
       if (req.baseUrl.includes('testimonials')) {
         cb(null, testimonialMediaDir);
-      } else if (req.baseUrl.includes('package-inquiries')) {
+      } else if (req.baseUrl.includes('inquiry-packages')) {
         cb(null, packageInquiriesDir);
       } else {
         cb(null, 'uploads/');
